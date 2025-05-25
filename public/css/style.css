@@ -11,6 +11,10 @@ body {
   margin: 0;
   /* Optional: set a background color */
   background: white;
+  background-image: url('../images/pexels-karolina-grabowska-5477697.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  backdrop-filter: blur(10px);
 }
 
 .container {
@@ -37,7 +41,7 @@ body {
   font-weight: 900;
   font-size: 30px;
   color: rgb(16, 137, 211);
-  padding-top: 30px;
+  padding-top: 15px;
 }
 
 .form {
@@ -91,7 +95,7 @@ body {
   );
   color: white;
   padding-block: 15px;
-  margin: 50px auto;
+  margin: 30px auto;
   border-radius: 20px;
   box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 20px 10px -15px;
   border: none;
@@ -109,7 +113,7 @@ body {
 }
 
 .social-account-container {
-  margin-top: 50px;
+  margin-top: 30px;
 }
 
 .social-account-container .title {
@@ -164,17 +168,35 @@ body {
   color: #0099ff;
   font-size: 9px;
 }
+.signInAccount {
+  margin-top: 30px;
+  margin-bottom: 10px;
+  text-align: center;
+  background: linear-gradient(90deg, #e0ecff 0%, #e3e7f7 100%);
+  color: #1689d3;
+  padding: 12px 0;
+  border-radius: 18px;
+  font-size: 15px;
+  box-shadow: 0 4px 16px 0 rgba(133,189,215,0.10);
+}
+
+.signInAccount a {
+  color: #12b1d1;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.signInAccount a:hover {
+  color: #0a6fa6;
+  text-decoration: underline;
+}
 @media (min-width: 768px) {
   .container {
-    height: 550px;
-  }
-  .social-account-container {
-    margin-top: 20px;
+    height: 570px;
   }
   .form {
     margin-top: 20px;
   }
-  .form .login-button {
-    margin: 40px auto;
-  }
+ 
 }
