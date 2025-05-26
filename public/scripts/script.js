@@ -1,6 +1,24 @@
+// Toastify
+const toastify = (text, background, color) => {
+    Toastify({
+        text: text,
+        duration: 3000,
+        newWindow: true,
+        close: true,
+        gravity: "top", // `top` or `bottom`
+        position: "right", // `left`, `center` or `right`
+        stopOnFocus: true, // Prevents dismissing of toast on hover
+        style: {
+            background: background,
+            color: color,
+        },
+        onClick: function () { } // Callback after click
+    }).showToast();
+}
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -15,3 +33,99 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// SIGN UP
+const signUpUser = () => {
+if (condition) {
+    
+} else {
+    
+}
+}
+
+// GOOGLE SIGN UP
+const signUpGoogle = () => {
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            const user = result.user;
+            console.log(user);
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            console.log(errorCode, error);
+            if (errorCode === 'auth/account-exists-with-different-credential') {
+                toastify('Another sign up provider has been used for this mail', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/popup-closed-by-user') {
+                toastify('The sign-in popup was closed before completing the sign in.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/cancelled-popup-request') {
+                toastify('Popup sign in was canceled because another popup was opened.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/popup-blocked') {
+                toastify('The browser blocked the sign-in popup. Please allow popups and try again.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/operation-not-allowed') {
+                toastify('Google sign-in is not enabled in your Firebase project.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/unauthorized-domain') {
+                toastify('This domain is not authorized for OAuth operations.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/network-request-failed') {
+                toastify('Network error. Please check your connection and try again.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/invalid-credential') {
+                toastify('The credential received is malformed or has expired.', "#f00", "#fff");
+            }
+        })
+}
+
+// GITHUB SIGN UP
+const signUpGithub = () => {
+    signInWithPopup(auth, provider)
+        .then((result) => {
+            const user = result.user;
+            console.log(user);
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 1000);
+        })
+        .catch((error) => {
+            const errorCode = error.code;
+            console.log(errorCode, error);
+            if (errorCode === 'auth/account-exists-with-different-credential') {
+                toastify('Another sign up provider has been used for this mail', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/popup-closed-by-user') {
+                toastify('The sign-in popup was closed before completing the sign in.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/cancelled-popup-request') {
+                toastify('Popup sign in was canceled because another popup was opened.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/popup-blocked') {
+                toastify('The browser blocked the sign-in popup. Please allow popups and try again.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/operation-not-allowed') {
+                toastify('Google sign-in is not enabled in your Firebase project.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/unauthorized-domain') {
+                toastify('This domain is not authorized for OAuth operations.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/network-request-failed') {
+                toastify('Network error. Please check your connection and try again.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/invalid-credential') {
+                toastify('The credential received is malformed or has expired.', "#f00", "#fff");
+            }
+        })
+}
+
+
+window.signUpUser = signUpUser
+window.signUpGoogle = signUpGoogle
+window.signUpGithub = signUpGithub
