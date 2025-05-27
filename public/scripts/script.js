@@ -38,11 +38,21 @@ const provider = new GoogleAuthProvider();
 
 // SIGN UP
 const signUpUser = () => {
-if (condition) {
-    
-} else {
-    
-}
+    const userName = document.getElementById('uName').value
+    const email = document.getElementById('mail').value
+    const password = document.getElementById('pass').value
+
+    if (userName === '' || email === '' || password === '') {
+        alert('working')
+
+    } else {
+        const userOBJ = {
+            userName, email, password
+        }
+        console.log(userOBJ);
+        
+        
+    }
 }
 
 // GOOGLE SIGN UP
