@@ -9,7 +9,7 @@ body {
   justify-content: center;
   align-items: center;
   margin: 0;
-  /* Optional: set a background color */
+  
   background: white;
   background-image: url("../images/pexels-karolina-grabowska-5477697.jpg");
   background-repeat: no-repeat;
@@ -21,7 +21,6 @@ body {
   max-width: 450px;
   height: 650px;
   width: 100%;
-  /* height: 1; */
   background: #f8f9fd;
   background: linear-gradient(
     0deg,
@@ -83,7 +82,7 @@ body {
 
 .input-wrapper .input {
   width: 100%;
-  padding-right: 44px; /* space for icon */
+  padding-right: 44px; 
   border-radius: 20px;
   border: none;
   background: white;
@@ -109,7 +108,6 @@ body {
   color: #1689d3;
   cursor: pointer;
   z-index: 2;
-  /* Make icon background transparent so it sits inside input */
   background: transparent;
   border: none;
   padding: 0;
@@ -237,3 +235,17 @@ body {
     margin-top: 10px;
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

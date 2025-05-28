@@ -41,18 +41,19 @@ const signUpUser = () => {
     const userName = document.getElementById('uName').value
     const email = document.getElementById('mail').value
     const password = document.getElementById('pass').value
+console.log("working");
 
-    if (userName === '' || email === '' || password === '') {
-        alert('working')
+    // if (userName === '' || email === '' || password === '') {
+    //     alert('working')
 
-    } else {
-        const userOBJ = {
-            userName, email, password
-        }
-        console.log(userOBJ);
-        
-        
-    }
+    // } else {
+    //     const userOBJ = {
+    //         userName, email, password
+    //     }
+    //     console.log(userOBJ);
+
+
+    // }
 }
 
 // GOOGLE SIGN UP
