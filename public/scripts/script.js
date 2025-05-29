@@ -16,6 +16,7 @@ const toastify = (text, background, color) => {
     }).showToast();
 }
 
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
@@ -41,19 +42,19 @@ const signUpUser = () => {
     const userName = document.getElementById('uName').value
     const email = document.getElementById('mail').value
     const password = document.getElementById('pass').value
-console.log("working");
 
-    // if (userName === '' || email === '' || password === '') {
-    //     alert('working')
+    if (userName === '' || email === '' || password === '') {
+        alert("Fill the input required")
+        toastify("Fill the input required", "#f00", "#fff")
 
-    // } else {
-    //     const userOBJ = {
-    //         userName, email, password
-    //     }
-    //     console.log(userOBJ);
+    } else {
+        const userOBJ = {
+            userName, email, password
+        }
+        console.log(userOBJ);
 
 
-    // }
+    }
 }
 
 // GOOGLE SIGN UP
@@ -140,3 +141,16 @@ const signUpGithub = () => {
 window.signUpUser = signUpUser
 window.signUpGoogle = signUpGoogle
 window.signUpGithub = signUpGithub
+// Show/Hide Password
+const password = document.getElementById('pass')
+const show = document.querySelector("#show")
+show.addEventListener("click", () => {
+    if (password.getAttribute("type") === "password") {
+        password.setAttribute("type", "text")
+        show.classList.replace("bi-eye", "bi-eye-slash")
+    } else {
+        password.setAttribute("type", "password")
+        show.classList.replace("bi-eye-slash", "bi-eye")
+
+    }
+})

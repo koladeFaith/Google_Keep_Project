@@ -18,7 +18,7 @@
   
   .container {
     max-width: 450px;
-    height: 610px;
+    height: 590px;
     width: 100%;
     background: #f8f9fd;
     background: linear-gradient(
@@ -27,7 +27,7 @@
       rgb(244, 247, 251) 100%
     );
     border-radius: 40px;
-    padding: 25px 35px;
+    padding: 20px 35px;
     border: 5px solid rgb(255, 255, 255);
     box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 30px 30px -20px;
     margin: 20px;
@@ -43,7 +43,7 @@
   }
   
   .form {
-    margin-top: 40px;
+    margin-top: 30px;
   }
   
   .form .input {
@@ -131,7 +131,7 @@
     );
     color: white;
     padding-block: 15px;
-    margin: 30px auto;
+    margin: 40px auto;
     border-radius: 20px;
     box-shadow: rgba(133, 189, 215, 0.8784313725) 0px 20px 10px -15px;
     border: none;
@@ -164,7 +164,7 @@
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin-top: 5px;
+    margin-top: 10px;
   }
   
   .social-account-container .social-accounts .social-button {
@@ -229,7 +229,7 @@
   }
   @media (min-width: 768px) {
     .container {
-      height: 550px;
+      height: 590px;
     }
     .form {
       margin-top: 20px;
