@@ -1,5 +1,5 @@
 // Toastify
-const toastify = (text, background, color) => {
+const toast = (text, background, color) => {
     Toastify({
         text: text,
         duration: 3000,

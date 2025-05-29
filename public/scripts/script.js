@@ -1,5 +1,5 @@
 // Toastify
-const toastify = (text, background, color) => {
+const toast = (text, background, color) => {
     Toastify({
         text: text,
         duration: 3000,
@@ -16,10 +16,9 @@ const toastify = (text, background, color) => {
     }).showToast();
 }
 
-
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -44,15 +43,37 @@ const signUpUser = () => {
     const password = document.getElementById('pass').value
 
     if (userName === '' || email === '' || password === '') {
-        alert("Fill the input required")
-        toastify("Fill the input required", "#f00", "#fff")
-
+        toast("Fill the input required", "#f00", "#fff")
     } else {
         const userOBJ = {
             userName, email, password
         }
         console.log(userOBJ);
-
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                console.log(user);
+                setTimeout(() => {
+                    toast('Sign up successful!', '#4CAF50', '#fff');
+                    window.location.href = "signin.html";
+                }, 1000);
+            })
+        .catch((error) => {
+            const errorCode = error.code;
+            console.log(errorCode, error);
+            if (errorCode === 'auth/email-already-in-use') {
+                toast('Email already in use. Please use a different email.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/invalid-email') {
+                toast('Invalid email format. Please enter a valid email.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/weak-password') {
+                toast('Weak password. Please enter a stronger password.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/operation-not-allowed') {
+                toast('Email/password accounts are not enabled. Please enable them in Firebase console.', "#f00", "#fff");
+            }
+        })
 
     }
 }
