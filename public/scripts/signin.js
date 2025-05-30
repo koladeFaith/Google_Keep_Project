@@ -18,7 +18,7 @@ const toast = (text, background, color) => {
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -36,8 +36,71 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+const signInUser = () => {
+    const email = document.getElementById('mail').value
+    const password = document.getElementById('pass').value
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{6,}$/;
+    if (email === '' || password === '') {
+        toast("Fill the input required", "#f00", "#fff")
+        return;
+    }
+    if (!passwordRegex.test(password)) {
+        toast(
+            "Password must be at least 6 characters and include uppercase, lowercase, and a special character.",
+            "#f00",
+            "#fff"
+        );
+        return;
+    }
+    else {
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                console.log(user);
+                if (user.emailVerified) {
+                    toast("Signed in successfully", "#006400", "#fff")
+                    user ? setTimeout(() => {
+                        window.location.href = 'dashboard.html'
+                    }, 1000) : window.location.href = 'index.html'
+                } else {
+                    toast("Please verify your email before signing in.", "#f00", "#fff");
+                    // Optionally, resend verification email
+                    sendEmailVerification(user);
+                }
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                console.log(errorCode);
+                if (errorCode === 'auth/wrong-password') {
+                    toast('Wrong password.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/user-not-found') {
+                    toast('User not found.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/invalid-email') {
+                    toast('Invalid email.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/invalid-recipient-email') {
+                    toast('Invalid recipient email address.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/too-many-requests') {
+                    toast('Too many requests. Try again later.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/operation-not-allowed') {
+                    toast('Operation not allowed.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/weak-password') {
+                    toast('Weak password.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/invalid-credential') {
+                    toast('Invalid credential.', "#f00", "#fff");
+                }
+            });
+    }
+}
+
 // GOOGLE SIGN UP
-const signUpGoogle = () => {
+const signInGoogle = () => {
     signInWithPopup(auth, provider)
         .then((result) => {
             const user = result.user;
@@ -77,7 +140,7 @@ const signUpGoogle = () => {
 }
 
 // GITHUB SIGN UP
-const signUpGithub = () => {
+const signInGithub = () => {
     signInWithPopup(auth, provider)
         .then((result) => {
             const user = result.user;
@@ -117,9 +180,9 @@ const signUpGithub = () => {
 }
 
 
-
-window.signUpGoogle = signUpGoogle
-window.signUpGithub = signUpGithub
+window.signInUser = signInUser
+window.signInGoogle = signInGoogle
+window.signInGithub = signInGithub
 
 
 

@@ -24,7 +24,7 @@
   <body>
     <div class="container">
       <div class="heading">Welcome back</div>
-      <form action="" class="form">
+      <div action="" class="form">
         <input
           required=""
           class="input"
@@ -46,16 +46,16 @@
           </div>
         <span class="forgot-password"><a href="#">Forgot Password ?</a></span>
         <input
-          onclick="signUpUser()"
+          onclick="signInUser()"
           class="login-button"
           type="submit"
           value="Sign Up" />
-      </form>
+      </div>
       <div class="social-account-container">
         <span class="title">Or Sign In with</span>
         <div class="social-accounts">
           <button
-            onclick="signUpGoogle()"
+            onclick="signInGoogle()"
             class="social-button google"
             type="button">
             <svg
@@ -68,7 +68,7 @@
             </svg>
           </button>
           <button
-            onclick="signUpGithub()"
+            onclick="signInGithub()"
             class="social-button github"
             type="button">
             <svg

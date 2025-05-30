@@ -3,25 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Google Keep</title>
+  <title>Google Keep Clone</title>
   <link rel="stylesheet" href="css/dashboard.css"/>
 </head>
 <body>
   <header>
-    <h1>📝 Keep Notes</h1>
+    <div class="logo">📝Keep</div>
+    <input type="text" placeholder="Search..." class="search-bar" />
+    <div class="header-icons">🔄 🔔 👤</div>
   </header>
 
-  <main>
-    <div class="note-input">
-      <textarea placeholder="Take a note..." id="noteText"></textarea>
-      <input type="file" id="noteImage" accept="image/*" />
-      <button id="addNote">Add Note</button>
-    </div>
+  <div class="container">
+    <aside>
+      <nav>
+        <a href="#">📝 Notes</a>
+        <a href="#">⏰ Reminders</a>
+        <a href="#">📥 Archive</a>
+        <a href="#">🗑️ Trash</a>
+      </nav>
+    </aside>
 
-    <div class="notes-container" id="notesContainer">
-    </div>
-  </main>
+    <main>
+      <div class="note-input">
+        <input id="text" type="text" placeholder="Take a note..." />
+        <label class="image-upload">
+          <input type="file" accept="image/*" style="display:none" />
+          <span title="Add image">🖼️</span>
+        </label>
+      </div>
+      <button onclick="addNote()">Add Note</button>
 
-  <script src="scripts/dashboard.js"></script>
+      <div class="note-grid">
+ <div id="show"></div>
+        </div>
+        <!-- Add more cards as needed -->
+      </div>
+    </main>
+  </div>
 </body>
 </html>

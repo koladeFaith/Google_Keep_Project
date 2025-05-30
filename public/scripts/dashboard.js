@@ -1,73 +1,38 @@
-const addBtn = document.getElementById('addNote');
-const notesContainer = document.getElementById('notesContainer');
-const noteText = document.getElementById('noteText');
-const noteImage = document.getElementById('noteImage');
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
-let notes = JSON.parse(localStorage.getItem('keepNotes')) || [];
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAfh8yKY_gXwzAbQ4HDt4uyKLAkNBkzhXI",
+    authDomain: "keep-e986b.firebaseapp.com",
+    databaseURL: "https://keep-e986b-default-rtdb.firebaseio.com",
+    projectId: "keep-e986b",
+    storageBucket: "keep-e986b.firebasestorage.app",
+    messagingSenderId: "746391927158",
+    appId: "1:746391927158:web:739393ce1bdbc3b945a257"
+};
 
-function renderNotes() {
-    notesContainer.innerHTML = '';
-    notes.forEach((note, index) => {
-        const card = document.createElement('div');
-        card.className = 'note-card';
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
 
-        const text = document.createElement('p');
-        text.textContent = note.text;
-        card.appendChild(text);
-
-        if (note.image) {
-            const img = document.createElement('img');
-            img.src = note.image;
-            card.appendChild(img);
-        }
-
-        const deleteBtn = document.createElement('button');
-        deleteBtn.className = 'delete-btn';
-        deleteBtn.textContent = '×';
-        deleteBtn.onclick = () => {
-            notes.splice(index, 1);
-            updateLocalStorage();
-            renderNotes();
-        };
-
-        card.appendChild(deleteBtn);
-        notesContainer.appendChild(card);
-    });
-}
-
-function updateLocalStorage() {
-    localStorage.setItem('keepNotes', JSON.stringify(notes));
-}
-
-addBtn.addEventListener('click', () => {
-    const text = noteText.value.trim();
-    const file = noteImage.files[0];
-
-    if (!text && !file) return;
-
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            notes.unshift({
-                text,
-                image: e.target.result
-            });
-            updateLocalStorage();
-            renderNotes();
-            noteText.value = '';
-            noteImage.value = '';
-        };
-        reader.readAsDataURL(file);
+const addNote = () => {
+    const note = document.getElementById('text').value
+    if (note === '') {
+        alert('working')
     } else {
-        notes.unshift({
-            text,
-            image: null
-        });
-        updateLocalStorage();
-        renderNotes();
-        noteText.value = '';
-        noteImage.value = '';
+        
+        show.innerHTML +=``
     }
-});
+}
 
-renderNotes();
+
+
+
+
+
+
+
+
+window.addNote = addNote

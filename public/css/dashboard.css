@@ -1,99 +1,128 @@
+/* Reset */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-  
-  body {
-    font-family: 'Segoe UI', sans-serif;
-    background: #f1f3f4;
-    color: #202124;
-  }
-  
-  header {
-    background: #fff;
-    padding: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    text-align: center;
-    font-size: 1.4rem;
-  }
-  
-  .note-input {
-    background: #fff;
-    max-width: 600px;
-    margin: 20px auto;
-    padding: 16px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .note-input textarea {
-    resize: none;
-    border: none;
-    height: 60px;
-    padding: 10px;
-    font-size: 1rem;
-    background: #f8f9fa;
-    border-radius: 5px;
-  }
-  
-  .note-input input[type="file"] {
-    border: none;
-    font-size: 0.9rem;
-  }
-  
-  .note-input button {
-    align-self: flex-end;
-    background-color: #1a73e8;
-    color: #fff;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 20px;
-    cursor: pointer;
-    font-weight: bold;
-  }
-  
-  .notes-container {
-    max-width: 1000px;
-    width: 100%;
-    height: fit-content;
-    margin: 0 auto;
-    padding: 20px;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 15px;
-  }
-  
-  .note-card {
-    background: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-    min-height: 100px;
-    position: relative;
-  }
-  
-  .note-card img {
-    max-width: 100%;
-    margin-top: 10px;
-    border-radius: 5px;
-  }
-  
-  .delete-btn {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    border: none;
-    background: #e53935;
-    color: white;
-    border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    line-height: 1;
-  }
-  
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f3f4;
+  color: #202124;
+}
+
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.logo {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.search-bar {
+  flex: 1;
+  margin: 0 20px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #e8eaed;
+}
+
+/* Layout */
+.container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* Sidebar */
+aside {
+  width: 200px;
+  background: #fff;
+  padding: 20px;
+  border-right: 1px solid #ddd;
+}
+
+aside nav a {
+  display: block;
+  padding: 10px;
+  color: #202124;
+  text-decoration: none;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+aside nav a:hover {
+  background: #f1f3f4;
+}
+
+/* Main */
+main {
+  flex: 1;
+  padding: 20px;
+}
+
+.note-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(133,189,215,0.10);
+  margin-bottom: 24px;
+}
+
+.note-input input[type="text"] {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  background: transparent;
+}
+
+.image-upload span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4em;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.image-upload span:hover {
+  background: #f0f4fa;
+}
+/* Notes Grid */
+.note-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.note-card {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+.note-card h4 {
+  margin-bottom: 6px;
+  font-size: 1.1em;
+}
+
+.note-card p {
+  font-size: 0.95em;
+}

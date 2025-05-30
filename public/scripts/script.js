@@ -18,7 +18,7 @@ const toast = (text, background, color) => {
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -41,10 +41,20 @@ const signUpUser = () => {
     const userName = document.getElementById('uName').value
     const email = document.getElementById('mail').value
     const password = document.getElementById('pass').value
-
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[\W_]).{6,}$/;
     if (userName === '' || email === '' || password === '') {
         toast("Fill the input required", "#f00", "#fff")
-    } else {
+        return;
+    }
+    if (!passwordRegex.test(password)) {
+        toast(
+            "Password must be at least 6 characters and include uppercase, lowercase, and a special character.",
+            "#f00",
+            "#fff"
+        );
+        return;
+    }
+    else {
         const userOBJ = {
             userName, email, password
         }
@@ -53,27 +63,40 @@ const signUpUser = () => {
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log(user);
-                setTimeout(() => {
-                    toast('Sign up successful!', '#4CAF50', '#fff');
-                    window.location.href = "signin.html";
-                }, 1000);
+                sendEmailVerification(user)
+                    .then(() => {
+                        // Email sent!
+                        toast("Verification email sent. Please check your inbox.", "#1689d3", "#fff");
+                        setTimeout(() => {
+                            window.location.href = 'signin.html'
+                        }, 1000)
+                    });
             })
-        .catch((error) => {
-            const errorCode = error.code;
-            console.log(errorCode, error);
-            if (errorCode === 'auth/email-already-in-use') {
-                toast('Email already in use. Please use a different email.', "#f00", "#fff");
-            }
-            if (errorCode === 'auth/invalid-email') {
-                toast('Invalid email format. Please enter a valid email.', "#f00", "#fff");
-            }
-            if (errorCode === 'auth/weak-password') {
-                toast('Weak password. Please enter a stronger password.', "#f00", "#fff");
-            }
-            if (errorCode === 'auth/operation-not-allowed') {
-                toast('Email/password accounts are not enabled. Please enable them in Firebase console.', "#f00", "#fff");
-            }
-        })
+            .catch((error) => {
+                const errorCode = error.code;
+                console.log(errorCode, error);
+                if (errorCode === 'auth/email-already-in-use') {
+                    toast('Email already in use. Please use a different email.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/invalid-email') {
+                    toast('Invalid email format. Please enter a valid email.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/weak-password') {
+                    toast('Weak password. Please enter a stronger password.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/operation-not-allowed') {
+                    toast('Email/password accounts are not enabled. Please enable them in Firebase console.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/too-many-requests') {
+                    toast('Too many requests. Please try again later.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/user-not-found') {
+                    toast('User not found.', "#f00", "#fff");
+                }
+                if (errorCode === 'auth/invalid-recipient-email') {
+                    toast('Invalid recipient email address.', "#f00", "#fff");
+                }
+            })
 
     }
 }
@@ -157,7 +180,12 @@ const signUpGithub = () => {
             }
         })
 }
-
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter')
+        signUpUser()
+        signUpGoogle()
+        signUpGithub()
+})
 
 window.signUpUser = signUpUser
 window.signUpGoogle = signUpGoogle
