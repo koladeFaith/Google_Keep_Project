@@ -17,15 +17,29 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-const addNote = () => {
-    const note = document.getElementById('text').value
-    if (note === '') {
-        alert('working')
-    } else {
-        
-        show.innerHTML +=``
+
+const menuToggle = document.getElementById('menu-toggle');
+const sidebar = document.getElementById('sidebar');
+menuToggle.addEventListener('click', () => {
+    sidebar.classList.toggle('active');
+});
+document.addEventListener('click', function (e) {
+    if (window.innerWidth < 768 && sidebar.classList.contains('active')) {
+        if (!sidebar.contains(e.target) && e.target !== menuToggle) {
+            sidebar.classList.remove('active');
+        }
     }
-}
+});
+
+// const addNote = () => {
+//     const note = document.getElementById('text').value
+//     if (note === '') {
+//         alert('working')
+//     } else {
+
+//         show.innerHTML +=``
+//     }
+// }
 
 
 

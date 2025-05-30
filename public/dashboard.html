@@ -5,21 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Google Keep Clone</title>
   <link rel="stylesheet" href="css/dashboard.css"/>
+  <!-- Bootsrap link -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 </head>
 <body>
   <header>
-    <div class="logo">📝Keep</div>
-    <input type="text" placeholder="Search..." class="search-bar" />
-    <div class="header-icons">🔄 🔔 👤</div>
+    <div class="logo">
+      <i class="bi bi-list" id="menu-toggle"></i>
+      📝Keep</div>
+      <div class="search-bar">
+        <i class="bi bi-search"></i>
+        <input type="text" placeholder="Search notes..." />
+      </div>
+    <div class="header-icons">
+      <i class="bi bi-arrow-repeat"></i>
+      <i class="bi bi-bell"></i>
+      <i class="bi bi-person-circle"></i>
+    </div>
   </header>
 
   <div class="container">
-    <aside>
+    <aside id="sidebar">
       <nav>
-        <a href="#">📝 Notes</a>
-        <a href="#">⏰ Reminders</a>
-        <a href="#">📥 Archive</a>
-        <a href="#">🗑️ Trash</a>
+        <a href="#"><i class="bi bi-journal-text"></i> Notes</a>
+        <a href="#"><i class="bi bi-alarm"></i> Reminders</a>
+        <a href="#"><i class="bi bi-archive"></i> Archive</a>
+        <a href="#"><i class="bi bi-trash"></i> Trash</a>
       </nav>
     </aside>
 
@@ -28,15 +39,14 @@
         <input id="text" type="text" placeholder="Take a note..." />
         <label class="image-upload">
           <input type="file" accept="image/*" style="display:none" />
-          <span title="Add image">🖼️</span>
-        </label>
+          <span title="Add image"><i class="bi bi-image"></i></span>        </label>
       </div>
       <button onclick="addNote()">Add Note</button>
 
       <div class="note-grid">
  <div id="show"></div>
         </div>
-        <!-- Add more cards as needed -->
+
       </div>
     </main>
   </div>
