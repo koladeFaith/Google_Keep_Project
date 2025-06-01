@@ -185,6 +185,11 @@ window.signInGoogle = signInGoogle
 window.signInGithub = signInGithub
 
 
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter')
+        signInUser()
+
+})
 
 // Show/Hide Password
 const password = document.getElementById('pass')

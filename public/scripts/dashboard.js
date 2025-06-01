@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -15,7 +16,9 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
+// const database = getDatabase(app);
+
+
 
 
 const menuToggle = document.getElementById('menu-toggle');
@@ -30,16 +33,93 @@ document.addEventListener('click', function (e) {
         }
     }
 });
+document.getElementById('noteTitle').addEventListener('focus', function () {
+    document.getElementById('noteDetails').style.display = 'flex';
+});
 
-// const addNote = () => {
-//     const note = document.getElementById('text').value
-//     if (note === '') {
-//         alert('working')
-//     } else {
+document.getElementById('noteTitle').addEventListener('focus', function () {
+    document.getElementById('noteDetails').style.display = 'flex';
+});
+document.addEventListener('click', function (e) {
+    const container = document.getElementById('noteInputCollapsible');
+    if (!container.contains(e.target)) {
+        document.getElementById('noteDetails').style.display = 'none';
+    }
+});
+const searchBar = () => {
+    searchBar2.style.display = 'flex';
+}
+document.querySelector('.bi-arrow-repeat').addEventListener('click', () => {
+    window.location.reload();
+});
+const profileIcon = document.querySelector('.profileImg');
+const profileModal = document.getElementById('profileModal');
+const closeProfileModal = document.getElementById('closeProfileModal');
+const mainContent = document.getElementById('mainContent');
 
-//         show.innerHTML +=``
-//     }
-// }
+profileIcon.addEventListener('click', () => {
+    profileModal.classList.add('active');
+    document.body.classList.add('profile-modal-active');
+});
+
+closeProfileModal.addEventListener('click', () => {
+    profileModal.classList.remove('active');
+    document.body.classList.remove('profile-modal-active');
+});
+
+profileModal.addEventListener('click', (e) => {
+    if (e.target === profileModal) {
+        profileModal.classList.remove('active');
+        document.body.classList.remove('profile-modal-active');
+    }
+});
+logOut.addEventListener('click', () => {
+    setTimeout(() => {
+        window.location = 'signin.html'
+    }, 1000)
+})
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        const profilePicPreview = document.getElementById('profilePicPreview');
+        const userEmail = document.getElementById('userEmail');
+        const userUname = document.getElementById('userUname');
+        console.log(user);
+        if (userEmail) {
+            userEmail.textContent = user.email;
+        }
+        if (userUname) {
+            userUname.textContent = user.displayName;
+        }
+        if (user.photoURL && profilePicPreview) {
+            profilePicPreview.src = user.photoURL;
+        }
+    } else {
+        setTimeout(() => {
+            window.location.href = "signin.html"
+        }, 1000)
+    }
+});
+
+
+
+
+
+
+
+
+const addNote = () => {
+    const note = document.getElementById('text').value
+    const noteTitle = document.getElementById('noteTitle').value
+    if (noteTitle === '' || note === '') {
+        alert('working')
+    } else {
+        const userObj = { noteTitle, note }
+        console.log(userObj);
+        const noteRef = ref(database, 'notes/1');
+        set(noteRef, userObj)
+    }
+
+}
 
 
 
@@ -50,3 +130,4 @@ document.addEventListener('click', function (e) {
 
 
 window.addNote = addNote
+window.searchBar = searchBar

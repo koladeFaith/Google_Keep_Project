@@ -183,8 +183,7 @@ const signUpGithub = () => {
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Enter')
         signUpUser()
-        signUpGoogle()
-        signUpGithub()
+
 })
 
 window.signUpUser = signUpUser
