@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
-import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.7.3/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -16,7 +16,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-// const database = getDatabase(app);
+const database = getDatabase(app);
 
 
 
@@ -81,6 +81,7 @@ logOut.addEventListener('click', () => {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         const profilePicPreview = document.getElementById('profilePicPreview');
+        const profilePicPreview1 = document.getElementById('profilePicPreview1');
         const userEmail = document.getElementById('userEmail');
         const userUname = document.getElementById('userUname');
         console.log(user);
@@ -92,6 +93,7 @@ onAuthStateChanged(auth, (user) => {
         }
         if (user.photoURL && profilePicPreview) {
             profilePicPreview.src = user.photoURL;
+            profilePicPreview1.src = user.photoURL;
         }
     } else {
         setTimeout(() => {
@@ -131,3 +133,18 @@ const addNote = () => {
 
 window.addNote = addNote
 window.searchBar = searchBar
+
+// const database = getDatabase(app);
+
+
+// UPLOAD IMAGE PROFILE
+const fileInput = document.getElementById("profilePicInput")
+
+fileInput.addEventListener("change", function (e) {
+    console.log(e.target.files[0]);
+    const profilePicPreview1 = document.getElementById('profilePicPreview1');
+
+    const url = URL.createObjectURL(e.target.files[0]);
+    profilePicPreview1.src = url
+
+})

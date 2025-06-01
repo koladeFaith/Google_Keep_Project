@@ -57,6 +57,7 @@ const signInUser = () => {
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log(user);
+                localStorage.setItem('user', JSON.stringify(user));
                 if (user.emailVerified) {
                     toast("Signed in successfully", "#006400", "#fff")
                     user ? setTimeout(() => {
