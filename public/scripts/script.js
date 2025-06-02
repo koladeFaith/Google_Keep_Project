@@ -46,6 +46,7 @@ const signUpUser = () => {
         toast("Fill the input required", "#f00", "#fff")
         return;
     }
+    // PASSWORD CITERIAS
     if (!passwordRegex.test(password)) {
         toast(
             "Password must be at least 6 characters and include uppercase, lowercase, and a special character.",
@@ -63,6 +64,7 @@ const signUpUser = () => {
             .then((userCredential) => {
                 const user = userCredential.user;
                 console.log(user);
+                // EMAIL VERIFICATION
                 sendEmailVerification(user)
                     .then(() => {
                         // Email sent!
@@ -180,6 +182,8 @@ const signUpGithub = () => {
             }
         })
 }
+
+// KEY DOWN 'ENTER'
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Enter')
         signUpUser()
@@ -189,6 +193,7 @@ document.addEventListener('keydown', (event) => {
 window.signUpUser = signUpUser
 window.signUpGoogle = signUpGoogle
 window.signUpGithub = signUpGithub
+
 // Show/Hide Password
 const password = document.getElementById('pass')
 const show = document.querySelector("#show")

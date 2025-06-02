@@ -113,10 +113,13 @@ header {
   flex-shrink: 0;
 }
 .header-icons i {
-  font-size: 1.8rem;
+  /* font-size: 2rem; */
   cursor: pointer;
   color: #fff;
   transition: color 0.2s;
+}
+.bi-arrow-repeat{
+  font-size: 40px;
 }
 .header-icons i:hover {
   color: #12b1d1;

@@ -36,6 +36,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+// SIGN IN USER
 const signInUser = () => {
     const email = document.getElementById('mail').value
     const password = document.getElementById('pass').value
@@ -44,6 +45,7 @@ const signInUser = () => {
         toast("Fill the input required", "#f00", "#fff")
         return;
     }
+    // PASSWORD CITERIAS
     if (!passwordRegex.test(password)) {
         toast(
             "Password must be at least 6 characters and include uppercase, lowercase, and a special character.",
@@ -185,7 +187,7 @@ window.signInUser = signInUser
 window.signInGoogle = signInGoogle
 window.signInGithub = signInGithub
 
-
+// KEYDOWN 'ENTER'
 document.addEventListener('keydown', (event) => {
     if (event.key === 'Enter')
         signInUser()
