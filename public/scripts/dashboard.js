@@ -25,7 +25,7 @@ import {
     getDatabase,
     ref,
     set,
-    onValue, remove
+    onValue, remove,
 } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
 // Your web app's Firebase configuration
@@ -57,6 +57,19 @@ document.addEventListener("click", function (e) {
         }
     }
 });
+// SEARCH BAR
+function searchBar() {
+    const searchBar2 = document.getElementById('searchBar2');
+    // Toggle visibility
+    if (searchBar2.style.display === "none" || searchBar2.style.display === "") {
+        searchBar2.style.display = "block";
+        // Optionally focus the input
+        const input = searchBar2.querySelector('input');
+        if (input) input.focus();
+    } else {
+        searchBar2.style.display = "none";
+    }
+  }
 // NOTE FOCUS
 document.getElementById("noteTitle").addEventListener("focus", function () {
     document.getElementById("noteDetails").style.display = "flex";
@@ -130,62 +143,45 @@ const addNote = () => {
         alert("Please fill in both the title and the note.");
         return;
     } else {
-        // Get the current notes from the database
-        let data;
-        onValue(ref(database, "notes"), (snapshot) => {
-            data = snapshot.val();
-        });
-
-        // DYNAMICALLY ADDING NOTE ID
-        let noteId;
-        if (data !== null) {
-            noteId = data.length;
-        } else {
-            noteId = 0;
-        }
-
-        // Create a new note object and set it in the database
-        const userObj = { noteTitle, note };
-        console.log(userObj);
-        const noteRef = ref(database, `notes/${noteId}`);
-        set(noteRef, userObj);
-        document.getElementById("text").value = ""
-        document.getElementById("noteTitle").value = ""
+        // Read the current notes array
+        const notesRef = ref(database, "notes");
+        onValue(notesRef, (snapshot) => {
+            let notesArr = snapshot.val() || [];
+            // If notesArr is an object (from previous structure), convert to array
+            if (!Array.isArray(notesArr)) {
+                notesArr = Object.values(notesArr);
+            }
+            // Add the new note
+            notesArr.push({ noteTitle, note });
+            console.log(notesArr, "NOTES ARRAY");
+            
+            // Write the updated array back to the database
+            set(notesRef, notesArr);
+            // Clear inputs
+            document.getElementById("text").value = "";
+            document.getElementById("noteTitle").value = "";
+        }, { onlyOnce: true }); // onlyOnce so it doesn't keep listening
+            
     }
 };
-// DELETE NOTE
-// const deleteNote = (index) => {
-//     const deleteRef = ref(database, `notes/${index}`); // Replace with your path
-
-//     remove(deleteRef)
-//         .then(() => {
-//             console.log("Data deleted successfully.");
-//         })
-//         .catch((error) => {
-//             console.error("Error deleting data:", error);
-//         });
-// }
 
 // DISPLAY NOTE ON UI
 let newRef = ref(database, "notes");
 const noteList = document.getElementById("note-grid")
 onValue(newRef, (snapshot) => {
     const data = snapshot.val();
-    console.log(data, "NOTES");
-    data
-        // .filter((item) => item !== null)
-        .map((info, i) => {
+    noteList.innerHTML = "";
+    if (data) {
+        data.map((info) => {
             noteList.innerHTML += `
                 <div class="note-card">
-            <h4>${info.noteTitle}</h4>
-            <p>
-              ${info.note}
-            </p>
-            <button>Delete</button>
-          </div>
+                    <h4>${info.noteTitle}</h4>
+                    <p>${info.note}</p>
+                    <button>Delete</button>
+                </div>
             `;
         });
-
+    }
 });
 
 window.addNote = addNote;

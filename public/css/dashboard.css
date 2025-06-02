@@ -109,17 +109,17 @@ header {
 .header-icons {
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 10px;
   flex-shrink: 0;
 }
 .header-icons i {
-  /* font-size: 2rem; */
+  font-size: 1.8rem;
   cursor: pointer;
   color: #fff;
   transition: color 0.2s;
 }
 .bi-arrow-repeat{
-  font-size: 40px;
+  font-size: 40px !important;
 }
 .header-icons i:hover {
   color: #12b1d1;
@@ -373,7 +373,7 @@ button:hover {
   gap: 24px;
   background: transparent;
   color: #fff;
-  margin-top: 18px;
+  margin-top: 50px;
 }
 
 /* Note Card */
