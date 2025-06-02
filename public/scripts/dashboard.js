@@ -105,6 +105,15 @@ profileModal.addEventListener("click", (e) => {
         document.body.classList.remove("profile-modal-active");
     }
 });
+// INPUT IMAGE
+
+// NOTE FOCUS
+window.onload = function () {
+    const notesLink = document.querySelector('a[href="#"] i.bi-journal-text').parentElement;
+    if (notesLink) {
+        notesLink.classList.add('active');
+    }
+};
 // LOG OUT
 logOut.addEventListener("click", () => {
     setTimeout(() => {
@@ -172,17 +181,29 @@ onValue(newRef, (snapshot) => {
     const data = snapshot.val();
     noteList.innerHTML = "";
     if (data) {
-        data.map((info) => {
+        data.map((info, i) => {
             noteList.innerHTML += `
                 <div class="note-card">
                     <h4>${info.noteTitle}</h4>
                     <p>${info.note}</p>
-                    <button>Delete</button>
+                    <button onclick='deleteNote(${i})'>Delete</button>
                 </div>
             `;
         });
     }
 });
+// DELETE NOTE FUNCTION
+const deleteNote = (index) => {
+    const notesRef = ref(database, "notes");
+    onValue(notesRef, (snapshot) => {
+        let notesArr = snapshot.val() || [];
+        if (!Array.isArray(notesArr)) {
+            notesArr = Object.values(notesArr);
+        }
+        notesArr.splice(index, 1); // Remove the note at the given index
+        set(notesRef, notesArr);   // Update the database
+    }, { onlyOnce: true });
+}
 
 window.addNote = addNote;
 window.searchBar = searchBar;
