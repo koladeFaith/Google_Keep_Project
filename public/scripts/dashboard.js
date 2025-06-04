@@ -232,12 +232,25 @@ const editNote = (index) => {
 }
 // UPLOAD IMAGE PROFILE
 const fileInput = document.getElementById("profilePicInput");
-fileInput.addEventListener("change", function (e) {
-    console.log(e.target.files[0]);
-    const profilePicPreview1 = document.getElementById("profilePicPreview1");
+fileInput.addEventListener("change", function () {
+    const file = this.files[0];
+    const reader = new FileReader();
 
-    const url = URL.createObjectURL(e.target.files[0]);
-    profilePicPreview1.src = url;
+    reader.onload = function (event) {
+        const base64String = event.target.result;
+
+        // Save to Firebase Realtime Database
+        firebase.database().ref('users/faith/profilePic').set(base64String);
+    };
+
+    reader.readAsDataURL(file); // Converts to Base64
+    firebase.database().ref('users/faith/profilePic').once('value')
+        .then((snapshot) => {
+            const base64Image = snapshot.val();
+            if (base64Image) {
+                document.getElementById('profile-pic').src = base64Image;
+            }
+        });
 });
 // EDIT NOTE AND FOCUS MODAL
 const noteGrid = document.getElementById('note-grid');
