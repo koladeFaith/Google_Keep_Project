@@ -5,8 +5,8 @@ const toast = (text, background, color) => {
         duration: 3000,
         newWindow: true,
         close: true,
-        gravity: "top", // `top` or `bottom`
-        position: "right", // `left`, `center` or `right`
+        gravity: "bottom", // `top` or `bottom`
+        position: "center", // `left`, `center` or `right`
         stopOnFocus: true, // Prevents dismissing of toast on hover
         style: {
             background: background,
@@ -69,7 +69,7 @@ function searchBar() {
     } else {
         searchBar2.style.display = "none";
     }
-  }
+}
 // NOTE FOCUS
 document.getElementById("noteTitle").addEventListener("focus", function () {
     document.getElementById("noteDetails").style.display = "flex";
@@ -149,7 +149,7 @@ const addNote = () => {
     const note = document.getElementById("text").value;
     const noteTitle = document.getElementById("noteTitle").value;
     if (noteTitle === "" || note === "") {
-        alert("Please fill in both the title and the note.");
+        toast("Please fill in both the title and the note.", '#f00', '#fff');
         return;
     } else {
         // Read the current notes array
@@ -163,14 +163,13 @@ const addNote = () => {
             // Add the new note
             notesArr.push({ noteTitle, note });
             console.log(notesArr, "NOTES ARRAY");
-            
+
             // Write the updated array back to the database
             set(notesRef, notesArr);
             // Clear inputs
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
         }, { onlyOnce: true }); // onlyOnce so it doesn't keep listening
-            
     }
 };
 
@@ -184,14 +183,22 @@ onValue(newRef, (snapshot) => {
         data.map((info, i) => {
             noteList.innerHTML += `
                 <div class="note-card">
+                  <div id='note-card2'>
                     <h4>${info.noteTitle}</h4>
-                    <p>${info.note}</p>
-                    <button onclick='deleteNote(${i})'>Delete</button>
+                    <p style='padding-bottom: 30px'>${info.note}</p>
+                    </div>
+                   <div id='hoverIcons'>
+                    <i onclick='deleteNote(${i})' class="bi bi-trash3 icons"></i>
+                    <i onclick='editNote(${i})' class="bi bi-pencil icons" ></i>
+                    <i class="bi bi-archive icons"></i>
+                    <i class="bi bi-alarm icons"></i> 
+                  </div>
                 </div>
             `;
         });
     }
 });
+
 // DELETE NOTE FUNCTION
 const deleteNote = (index) => {
     const notesRef = ref(database, "notes");
@@ -204,13 +211,25 @@ const deleteNote = (index) => {
         set(notesRef, notesArr);   // Update the database
     }, { onlyOnce: true });
 }
-
-window.addNote = addNote;
-window.searchBar = searchBar;
-window.deleteNote = deleteNote;
-
-// const database = getDatabase(app);
-
+// EDIT NOTE FUNCTION
+const editNote = (index) => {
+    // Get notes from database
+    const notesRef = ref(database, "notes");
+    onValue(notesRef, (snapshot) => {
+        let notesArr = snapshot.val() || [];
+        if (!Array.isArray(notesArr)) {
+            notesArr = Object.values(notesArr);
+        }
+        const note = notesArr[index];
+        if (note) {
+            editIndex = index;
+            document.getElementById('editNoteTitle').value = note.noteTitle;
+            document.getElementById('editNoteText').value = note.note;
+            noteEditModal.classList.add('active');
+            mainContent.classList.add('blur-bg');
+        }
+    }, { onlyOnce: true });
+}
 // UPLOAD IMAGE PROFILE
 const fileInput = document.getElementById("profilePicInput");
 fileInput.addEventListener("change", function (e) {
@@ -220,3 +239,80 @@ fileInput.addEventListener("change", function (e) {
     const url = URL.createObjectURL(e.target.files[0]);
     profilePicPreview1.src = url;
 });
+// EDIT NOTE AND FOCUS MODAL
+const noteGrid = document.getElementById('note-grid');
+const noteEditModal = document.getElementById('noteEditModal');
+const closeEditModal = document.getElementById('closeEditModal');
+const mainContent = document.querySelector('.body');
+let editIndex = null;
+
+// Show modal and blur background when a note is clicked
+noteGrid.addEventListener('click', function (e) {
+    // If the click is on an icon or inside #hoverIcons, do nothing
+    if (
+        e.target.classList.contains('icons') ||
+        e.target.closest('#hoverIcons')
+    ) {
+        return; // Don't open the edit modal
+    }
+
+    // Find the note-card and its index
+    const card = e.target.closest('.note-card');
+    if (card) {
+        editIndex = Array.from(noteGrid.children).indexOf(card);
+        const title = card.querySelector('h4').textContent;
+        const text = card.querySelector('p').textContent;
+        document.getElementById('editNoteTitle').value = title;
+        document.getElementById('editNoteText').value = text;
+        noteEditModal.classList.add('active');
+        mainContent.classList.add('blur-bg');
+    }
+});
+// Close modal and remove blur
+closeEditModal.addEventListener('click', () => {
+    noteEditModal.classList.remove('active');
+    mainContent.classList.remove('blur-bg');
+});
+// Close modal when clicking outside modal content
+noteEditModal.addEventListener('click', (e) => {
+    if (e.target === noteEditModal) {
+        noteEditModal.classList.remove('active');
+        mainContent.classList.remove('blur-bg');
+    }
+});
+// Save edited note (you need to update your notes array/database here)
+document.getElementById('saveEditBtn').addEventListener('click', () => {
+    // Get new values
+    const newTitle = document.getElementById('editNoteTitle').value;
+    const newText = document.getElementById('editNoteText').value;
+    if (newTitle === "" || newTitle === "") {
+        toast("Edited title and note cannot be empty.", '#f00', '#fff');
+        return;
+    }
+    // TODO: Update your notes array/database at editIndex
+    // After saving:
+    const notesRef = ref(database, "notes");
+    onValue(notesRef, (snapshot) => {
+        let notesArr = snapshot.val() || [];
+        if (!Array.isArray(notesArr)) {
+            notesArr = Object.values(notesArr);
+        }
+        // Update the note at editIndex
+        notesArr[editIndex] = { noteTitle: newTitle, note: newText };
+        set(notesRef, notesArr);
+
+        noteEditModal.classList.remove('active');
+        mainContent.classList.remove('blur-bg');
+    }, { onlyOnce: true });
+    toast("Note edited sucessfully", '#006400', '#fff');
+
+});
+
+
+
+
+
+window.addNote = addNote;
+window.searchBar = searchBar;
+window.deleteNote = deleteNote;
+window.editNote = editNote

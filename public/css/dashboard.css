@@ -118,7 +118,7 @@ header {
   color: #fff;
   transition: color 0.2s;
 }
-.bi-arrow-repeat{
+.bi-arrow-repeat {
   font-size: 35px !important;
 }
 .header-icons i:hover {
@@ -135,7 +135,12 @@ header {
 
 /* Sidebar */
 aside {
-  background: linear-gradient(135deg, #a1c4fd 20%, #fcb69f 50%, #272727 50%);
+  background: linear-gradient(
+    135deg,
+    #a1c4fdde 20%,
+    #fcb69fd2 50%,
+    #272727 50%
+  );
   min-width: 180px;
   padding: 10px 40px 32px 0;
   /* height: 100vh; */
@@ -229,7 +234,7 @@ main {
   outline: none;
   background: transparent;
   color: #fff;
-  font-size: 1.12rem;
+  font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0;
   padding: 8px 0;
@@ -249,7 +254,7 @@ main {
   outline: none;
   background: transparent;
   color: #fff;
-  font-size: 1.05rem;
+  font-size: 1rem;
   padding: 4px 0;
 }
 
@@ -345,22 +350,23 @@ main {
 }
 
 /* Button */
-button {
+.deleteBtn {
   background: linear-gradient(90deg, #a1c4fd 0%, #fcb69f 100%);
   color: #232323;
   border: none;
   border-radius: 10px;
   padding: 10px 26px;
-  margin-top: 10px;
-  margin-bottom: 18px;
+  margin-top: 23px;
+  margin-bottom: 15px;
   cursor: pointer;
   font-weight: 600;
   font-size: 1.08em;
+  align-self: flex-end;
   letter-spacing: 0.5px;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
   box-shadow: 0 2px 8px rgba(161, 196, 253, 0.1);
 }
-button:hover {
+.deleteBtn:hover {
   background: linear-gradient(90deg, #fcb69f 0%, #a1c4fd 100%);
   color: #1689d3;
   box-shadow: 0 4px 16px rgba(252, 182, 159, 0.1);
@@ -370,13 +376,13 @@ button:hover {
 .note-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 24px;
-  max-width: 1100px;
+  gap: 20px;
+  max-width: 1500px;
   margin: 0 auto;
   background: transparent;
   color: #fff;
   margin-top: 50px;
-  align-items: start; 
+  align-items: start;
   justify-content: center;
 }
 
@@ -386,18 +392,20 @@ button:hover {
   color: #fff;
   max-width: 300px;
   width: 100%;
-  padding: 14px 18px 14px 18px;
+  padding: 8px 18px 14px 18px;
   border-radius: 12px;
-  box-shadow: 0 1px 12px rgba(161, 196, 253, 0.1);
-  border-left: 5px solid #a1c4fd;
+  box-shadow: 0 1px 12px rgba(161, 196, 253, 0.062);
+  border-left: 2px solid #a1c4fdc0;
   transition: box-shadow 0.2s, border-color 0.2s;
   position: relative;
   height: auto;
   word-break: break-word;
+  display: flex;
+  flex-direction: column;
 }
 .note-card:hover {
-  box-shadow: 0 4px 24px rgba(252, 182, 159, 0.13);
-  border-left: 5px solid #fcb69f;
+  box-shadow: 0 4px 24px rgba(252, 182, 159, 0.075);
+  border-left: 2px solid #fcb69fc0;
 }
 .note-card h4 {
   margin-bottom: 8px;
@@ -410,11 +418,25 @@ button:hover {
   color: #fff;
   margin-bottom: 0;
 }
+.note-card #hoverIcons {
+  display: none;
+}
+
+.note-card:hover #hoverIcons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  
+}
+.icons:hover{
+color: #fcb69f;
+}
 /* Profile Modal Styles */
 .profile-modal {
   display: none;
   position: absolute;
-  top: 45px;   /* space below header */
+  top: 45px; /* space below header */
   right: -0px;
   left: auto;
   width: auto;
@@ -433,12 +455,12 @@ button:hover {
 .profile-modal-content {
   background: #232323;
   color: #fff;
-  margin: 60px 10px 0 30px; 
+  margin: 60px 10px 0 30px;
 
   /* margin: 20px 20px 0 20px;  */
   padding: 10px 10px 24px 10px;
   border-radius: 16px;
-  box-shadow: 0 4px 32px rgba(161,196,253,0.18);
+  box-shadow: 0 4px 32px rgba(161, 196, 253, 0.18);
   min-width: 300px;
   max-width: 90vw;
   text-align: center;
@@ -476,7 +498,6 @@ button:hover {
   background: #fff;
 }
 
-
 .profile-upload-label {
   margin-top: 8px;
 }
@@ -491,7 +512,7 @@ button:hover {
   font-weight: 600;
   font-size: 1em;
   transition: background 0.2s, color 0.2s;
-  box-shadow: 0 2px 8px rgba(161,196,253,0.10);
+  box-shadow: 0 2px 8px rgba(161, 196, 253, 0.1);
   display: inline-block;
 }
 .profile-upload-btn:hover {
@@ -505,9 +526,68 @@ button:hover {
   object-fit: cover;
   border: 2px solid #a1c4fd;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(161,196,253,0.10);
+  box-shadow: 0 2px 8px rgba(161, 196, 253, 0.1);
+}
+/* Modal overlay for editing note */
+.note-edit-modal {
+  display: none;
+  position: fixed;
+  z-index: 3000;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(24,24,24,0.3);
+  backdrop-filter: blur(6px);
+  justify-content: center;
+  align-items: center;
+}
+.note-edit-modal h2{
+color: whitesmoke;
 }
 
+.note-edit-modal.active {
+  display: flex;
+}
+
+.note-edit-content {
+  background: #232323;
+  color: #fff;
+  padding: 2px 28px 24px 28px;
+  border-radius: 16px;
+  /* box-shadow: 0 4px 32px rgba(161,196,253,0.18); */
+  min-width: 300px;
+  max-width: 90vw;
+  text-align: center;
+  position: relative;
+}
+#editNoteTitle {
+  margin-bottom: 8px;
+  font-size: 1.13em;
+  font-weight: 600;
+  color: #a1c4fd;
+}
+#editNoteText {
+  font-size: 1em;
+  color: #fff;
+  margin-bottom: 0;
+}
+.close-edit-modal {
+  position: absolute;
+  top: 16px;
+  right: 22px;
+  font-size: 2rem;
+  color: #a1c4fd;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* Blur main content when modal is active */
+.blur-bg {
+  filter: blur(1px);
+  pointer-events: none;
+  user-select: none;
+}
 /* Hide sidebar by default on mobile */
 @media (max-width: 767px) {
   #sidebar {
@@ -551,7 +631,7 @@ button:hover {
   .header-icons i {
     font-size: 1.8rem;
   }
-  .bi-arrow-repeat{
+  .bi-arrow-repeat {
     font-size: 40px !important;
   }
   #sidebar {
@@ -580,16 +660,18 @@ button:hover {
   .header-icons .mobile-search {
     display: none !important;
   }
-  #menu-toggle{
+  #menu-toggle {
     display: none;
   }
   .profile-modal-content {
     background: #232323;
     color: #fff;
 
-  
-    margin: 20px 16px 0 20px; 
-    padding: 9px 16px 24px 16px;}
+    margin: 20px 16px 0 20px;
+    padding: 9px 16px 24px 16px;
+  }
+  .note-card {
+    max-width: 200px;}
 }
 @media (max-width: 900px) {
   .search-bar {
