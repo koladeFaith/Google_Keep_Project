@@ -148,30 +148,60 @@ onAuthStateChanged(auth, (user) => {
 const addNote = () => {
     const note = document.getElementById("text").value;
     const noteTitle = document.getElementById("noteTitle").value;
+    const imageInput = document.getElementById('noteImage')
+    const imageFile = imageInput.files[0];
     if (noteTitle === "" || note === "") {
         toast("Please fill in both the title and the note.", '#f00', '#fff');
         return;
-    } else {
-        // Read the current notes array
+    }
+    const imagePreview = document.getElementById('noteImagePreview');
+
+    imageInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                imagePreview.src = event.target.result;
+                imagePreview.style.display = "block";
+            };
+            reader.readAsDataURL(file);
+        } else {
+            imagePreview.src = "";
+            imagePreview.style.display = "none";
+        }
+    });
+    // Function to actually add the note (with or without image)
+    const saveNote = (imageBase64 = "") => {
         const notesRef = ref(database, "notes");
         onValue(notesRef, (snapshot) => {
             let notesArr = snapshot.val() || [];
-            // If notesArr is an object (from previous structure), convert to array
             if (!Array.isArray(notesArr)) {
                 notesArr = Object.values(notesArr);
             }
-            // Add the new note
-            notesArr.push({ noteTitle, note });
-            console.log(notesArr, "NOTES ARRAY");
-
-            // Write the updated array back to the database
+            notesArr.push({ noteTitle, note, image: imageBase64 });
             set(notesRef, notesArr);
             // Clear inputs
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
-        }, { onlyOnce: true }); // onlyOnce so it doesn't keep listening
+            imagePreview.src = "";
+            imagePreview.style.display = "none";
+            imageInput.value = "";
+        }, { onlyOnce: true });
+    };
+    // If image is selected, read as Base64, then save
+    if (imageFile) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const base64String = event.target.result;
+            saveNote(base64String);
+        };
+        reader.readAsDataURL(imageFile);
+    } else {
+        saveNote();
     }
+
 };
+
 
 // DISPLAY NOTE ON UI
 let newRef = ref(database, "notes");
@@ -186,6 +216,7 @@ onValue(newRef, (snapshot) => {
                   <div id='note-card2'>
                     <h4>${info.noteTitle}</h4>
                     <p style='padding-bottom: 30px'>${info.note}</p>
+                    ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                     </div>
                    <div id='hoverIcons'>
                     <i onclick='deleteNote(${i})' class="bi bi-trash3 icons"></i>
