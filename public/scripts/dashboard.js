@@ -70,6 +70,15 @@ function searchBar() {
         searchBar2.style.display = "none";
     }
 }
+// Path of page
+const path = window.location.pathname;
+document.querySelectorAll('.sidebar-link').forEach(link => {
+    if (link.href.includes(path.split('/').pop())) {
+        link.classList.add('active');
+    } else {
+        link.classList.remove('active');
+    }
+});
 // NOTE FOCUS
 document.getElementById("noteTitle").addEventListener("focus", function () {
     document.getElementById("noteDetails").style.display = "flex";
@@ -137,6 +146,52 @@ removeEditImageBtn.addEventListener('click', function () {
     removeEditImageBtn.style.display = "none";
     editImageRemoved = true;
 });
+// UPLOAD IMAGE PROFILE OR CHANGE THE PROFILE IMAGE 
+const profilePicInput = document.getElementById('profilePicInput');
+const profilePicPreview1 = document.getElementById('profilePicPreview1');
+const profileUploadBtn = document.getElementById('profileUploadBtn');
+const profileSubmitBtn = document.getElementById('profileSubmitBtn');
+const profilePicForm = document.getElementById('profilePicForm');
+
+// Open file dialog when clicking "Upload Photo"
+profileUploadBtn.addEventListener('click', function (e) {
+    e.preventDefault();
+    profilePicInput.click();
+});
+
+// Show preview and "Submit" button when an image is selected
+profilePicInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            profilePicPreview1.src = event.target.result; // Show preview
+            profileUploadBtn.style.display = "none";
+            profileSubmitBtn.style.display = "inline-block";
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Handle submit: save image to Firebase and reset buttons
+profilePicForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    const file = profilePicInput.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            const base64String = event.target.result;
+            // Save to Firebase (example path, adjust as needed)
+            set(ref(database, 'users/' + auth.currentUser.uid + '/profilePic'), base64String)
+                .then(() => {
+                    profileUploadBtn.style.display = "inline-block";
+                    profileSubmitBtn.style.display = "none";
+                    toast("Profile picture updated!", '#006400', '#fff');
+                });
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
 // NOTE FOCUS
 window.onload = function () {
@@ -202,6 +257,7 @@ const addNote = () => {
             imagePreview.src = "";
             imagePreview.style.display = "none";
             imageInput.value = "";
+            removeNoteImageBtn.style.display = "none";
         }, { onlyOnce: true });
     };
     // If image is selected, read as Base64, then save
@@ -226,22 +282,24 @@ onValue(newRef, (snapshot) => {
     const data = snapshot.val();
     noteList.innerHTML = "";
     if (data) {
-        data.map((info, i) => {
-            noteList.innerHTML += `
-                <div class="note-card">
-                  <div id='note-card2'>
-                    <h4>${info.noteTitle}</h4>
-                    <p style='padding-bottom: 30px'>${info.note}</p>
-                    ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+        data.forEach((info, i) => {
+            if (!info.trashed) { // Only show notes NOT in trash
+                noteList.innerHTML += `
+                    <div class="note-card">
+                      <div id='note-card2'>
+                        <h4>${info.noteTitle}</h4>
+                        <p style='padding-bottom: 30px'>${info.note}</p>
+                        ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                      </div>
+                      <div id='hoverIcons'>
+                        <i onclick='deleteNote(${i})' class="bi bi-trash3 icons"></i>
+                        <i onclick='editNote(${i})' class="bi bi-pencil icons"></i>
+                        <i class="bi bi-archive icons"></i>
+                        <i class="bi bi-alarm icons"></i> 
+                      </div>
                     </div>
-                   <div id='hoverIcons'>
-                    <i onclick='deleteNote(${i})' class="bi bi-trash3 icons"></i>
-                    <i onclick='editNote(${i})' class="bi bi-pencil icons" ></i>
-                    <i class="bi bi-archive icons"></i>
-                    <i class="bi bi-alarm icons"></i> 
-                  </div>
-                </div>
-            `;
+                `;
+            }
         });
     }
 });
@@ -251,11 +309,11 @@ const deleteNote = (index) => {
     const notesRef = ref(database, "notes");
     onValue(notesRef, (snapshot) => {
         let notesArr = snapshot.val() || [];
-        if (!Array.isArray(notesArr)) {
-            notesArr = Object.values(notesArr);
+        if (!Array.isArray(notesArr)) notesArr = Object.values(notesArr);
+        if (notesArr[index]) {
+            notesArr[index].trashed = true; // Mark as trashed
+            set(notesRef, notesArr);
         }
-        notesArr.splice(index, 1); // Remove the note at the given index
-        set(notesRef, notesArr);   // Update the database
     }, { onlyOnce: true });
 }
 // EDIT NOTE FUNCTION
@@ -292,28 +350,6 @@ const editNote = (index) => {
         }
     }, { onlyOnce: true });
 }
-// UPLOAD IMAGE PROFILE
-const fileInput = document.getElementById("profilePicInput");
-fileInput.addEventListener("change", function () {
-    const file = this.files[0];
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-        const base64String = event.target.result;
-
-        // Save to Firebase Realtime Database
-        firebase.database().ref('users/faith/profilePic').set(base64String);
-    };
-
-    reader.readAsDataURL(file); // Converts to Base64
-    firebase.database().ref('users/faith/profilePic').once('value')
-        .then((snapshot) => {
-            const base64Image = snapshot.val();
-            if (base64Image) {
-                document.getElementById('profile-pic').src = base64Image;
-            }
-        });
-});
 // EDIT NOTE AND FOCUS MODAL
 const noteGrid = document.getElementById('note-grid');
 const noteEditModal = document.getElementById('noteEditModal');
@@ -385,6 +421,39 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
     }, { onlyOnce: true });
     toast("Note edited sucessfully", '#006400', '#fff');
 
+});
+// REMOVE IMAGE
+const noteImageInput = document.getElementById('noteImage');
+const noteImagePreview = document.getElementById('noteImagePreview');
+const noteImageIcon = document.querySelector('.image-upload span');
+const removeNoteImageBtn = document.getElementById('removeNoteImageBtn');
+
+noteImageIcon.addEventListener('click', function () {
+    noteImageInput.click();
+});
+
+noteImageInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            noteImagePreview.src = event.target.result;
+            noteImagePreview.style.display = "block";
+            removeNoteImageBtn.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    } else {
+        noteImagePreview.src = "";
+        noteImagePreview.style.display = "none";
+        removeNoteImageBtn.style.display = "none";
+    }
+});
+
+removeNoteImageBtn.addEventListener('click', function () {
+    noteImagePreview.src = "";
+    noteImagePreview.style.display = "none";
+    noteImageInput.value = "";
+    removeNoteImageBtn.style.display = "none";
 });
 
 
