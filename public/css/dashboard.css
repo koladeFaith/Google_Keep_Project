@@ -137,12 +137,12 @@ header {
 aside {
   background: linear-gradient(
     135deg,
-    #a1c4fdde 20%,
-    #fcb69fd2 50%,
-    #272727 50%
+    #a1c4fdde 50%,
+    #fcb69fd2 0%,
+
   );
   min-width: 180px;
-  padding: 10px 40px 32px 0;
+  padding: 22px 40px 32px 0;
   /* height: 100vh; */
   box-shadow: 2px 0 16px 0 rgba(161, 196, 253, 0.12);
   display: flex;
@@ -156,7 +156,7 @@ aside nav {
   width: 100%;
 }
 aside nav a {
-  color: #232323;
+  color: #a1c4fdde;
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -375,9 +375,9 @@ main {
 /* Notes Grid */
 .note-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
-  max-width: 1500px;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 23px;
+  max-width: 1100px;
   margin: 0 auto;
   background: transparent;
   color: #fff;
@@ -390,7 +390,7 @@ main {
 .note-card {
   background: #232323;
   color: #fff;
-  max-width: 300px;
+  max-width: 400px;
   width: 100%;
   padding: 8px 18px 14px 18px;
   border-radius: 12px;
@@ -601,6 +601,8 @@ color: whitesmoke;
     box-shadow: 2px 0 16px 0 rgba(161, 196, 253, 0.12);
     animation: slideIn 0.3s;
   }
+  #sidebar nav a {
+    color: black;}
   #sidebar.active {
     display: flex !important;
     flex-direction: column;

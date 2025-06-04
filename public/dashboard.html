@@ -59,6 +59,10 @@
           </div>
           <!-- INPUT COLLAPSE -->
           <div class="note-input-collapsible" id="noteInputCollapsible">
+            <!-- Image preview goes here, above the note title and text -->
+            <img
+              id="noteImagePreview"
+              style="display: none; max-width: 100%; margin-bottom: 10px; border-radius: 8px;" />
             <div class="note-top-row">
               <input
                 id="noteTitle"
@@ -66,15 +70,7 @@
                 placeholder="Title"
                 class="note-title" />
               <label class="image-upload">
-                <input id="noteImage" type="file" accept="image/*" style="display: none;"/>
-                <img
-                  id="noteImagePreview"
-                  style="
-                    display: none;
-                    max-width: 100%;
-                    margin-top: 10px;
-                    border-radius: 8px;
-                  " />
+                <input id="noteImage" type="file" accept="image/*" style="display: none;" />
                 <span title="Add image"><i class="bi bi-image"></i></span>
               </label>
             </div>
@@ -125,6 +121,10 @@
       <div class="note-edit-content">
         <span class="close-edit-modal" id="closeEditModal">&times;</span>
         <h2>Edit Note</h2>
+        <div style="position: relative; display: inline-block;">
+          <img id="editNoteImagePreview" style="max-width: 100%; margin-bottom: 10px; border-radius: 8px;" />
+          <span id="removeEditImageBtn" style="display: none; position: absolute; top: 4px; right: 4px; background: #232323cc; color: #fff; border-radius: 50%; padding: 2px 7px; cursor: pointer; font-size: 1.2em;">&times;</span>
+        </div>
         <input id="editNoteTitle" type="text" class="note-title" />
         <input id="editNoteText" type="text" class="note-text" />
         <button id="saveEditBtn" class="deleteBtn">Save</button>

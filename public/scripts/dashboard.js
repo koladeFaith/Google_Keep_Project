@@ -105,7 +105,38 @@ profileModal.addEventListener("click", (e) => {
         document.body.classList.remove("profile-modal-active");
     }
 });
-// INPUT IMAGE
+
+// DOM elements for image preview
+const imageInput = document.getElementById('noteImage');
+const imagePreview = document.getElementById('noteImagePreview');
+const imageIcon = document.querySelector('.image-upload span');
+
+imageIcon.addEventListener('click', function () {
+    imageInput.click(); // Open file dialog when icon is clicked
+});
+imageInput.addEventListener('change', function () {
+    const file = this.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            imagePreview.src = event.target.result;
+            imagePreview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+    } else {
+        imagePreview.src = "";
+        imagePreview.style.display = "none";
+    }
+});
+
+let editImageRemoved = false;
+
+removeEditImageBtn.addEventListener('click', function () {
+    editNoteImagePreview.src = "";
+    editNoteImagePreview.style.display = "none";
+    removeEditImageBtn.style.display = "none";
+    editImageRemoved = true;
+});
 
 // NOTE FOCUS
 window.onload = function () {
@@ -154,22 +185,7 @@ const addNote = () => {
         toast("Please fill in both the title and the note.", '#f00', '#fff');
         return;
     }
-    const imagePreview = document.getElementById('noteImagePreview');
 
-    imageInput.addEventListener('change', function () {
-        const file = this.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function (event) {
-                imagePreview.src = event.target.result;
-                imagePreview.style.display = "block";
-            };
-            reader.readAsDataURL(file);
-        } else {
-            imagePreview.src = "";
-            imagePreview.style.display = "none";
-        }
-    });
     // Function to actually add the note (with or without image)
     const saveNote = (imageBase64 = "") => {
         const notesRef = ref(database, "notes");
@@ -256,6 +272,21 @@ const editNote = (index) => {
             editIndex = index;
             document.getElementById('editNoteTitle').value = note.noteTitle;
             document.getElementById('editNoteText').value = note.note;
+
+            // When opening the edit modal
+            const editNoteImagePreview = document.getElementById('editNoteImagePreview');
+            const removeEditImageBtn = document.getElementById('removeEditImageBtn');
+
+            if (note.image) {
+                editNoteImagePreview.src = note.image;
+                editNoteImagePreview.style.display = "block";
+                removeEditImageBtn.style.display = "block";
+            } else {
+                editNoteImagePreview.src = "";
+                editNoteImagePreview.style.display = "none";
+                removeEditImageBtn.style.display = "none";
+            }
+            editImageRemoved = false;
             noteEditModal.classList.add('active');
             mainContent.classList.add('blur-bg');
         }
@@ -342,7 +373,11 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
             notesArr = Object.values(notesArr);
         }
         // Update the note at editIndex
-        notesArr[editIndex] = { noteTitle: newTitle, note: newText };
+        notesArr[editIndex] = {
+            noteTitle: newTitle,
+            note: newText,
+            image: editImageRemoved ? "" : editNoteImagePreview.src
+        };
         set(notesRef, notesArr);
 
         noteEditModal.classList.remove('active');
