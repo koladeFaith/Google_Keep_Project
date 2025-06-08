@@ -593,6 +593,17 @@ main {
 }
 /* Hide sidebar by default on mobile */
 @media (max-width: 767px) {
+  .logo {
+    font-size: 25px;}
+    .header-icons i {
+      font-size: 1.3rem;
+    }
+    .bi-arrow-repeat {
+      font-size: 25px !important;
+    }
+    .profileImg img {
+      width: 30px;
+      height: 30px;}
   #sidebar {
     display: none;
     position: fixed;

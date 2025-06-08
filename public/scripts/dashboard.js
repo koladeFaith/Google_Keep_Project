@@ -305,19 +305,17 @@ onValue(newRef, (snapshot) => {
 });
 
 // DELETE NOTE FUNCTION
-const deleteNote = (index) => {
-    const notesRef = ref(database, "notes");
-    onValue(notesRef, (snapshot) => {
-        let notesArr = snapshot.val() || [];
-        if (!Array.isArray(notesArr)) notesArr = Object.values(notesArr);
-        if (notesArr[index]) {
-            notesArr[index].trashed = true; // Mark as trashed
-            set(notesRef, notesArr);
+const deleteNote = (key) => {
+    const noteRef = ref(database, "notes/" + key);
+    onValue(noteRef, (snapshot) => {
+        const note = snapshot.val();
+        if (note) {
+            set(noteRef, { ...note, trashed: true });
         }
     }, { onlyOnce: true });
 }
 // EDIT NOTE FUNCTION
-const editNote = (index) => {
+const editNote = (key) => {
     // Get notes from database
     const notesRef = ref(database, "notes");
     onValue(notesRef, (snapshot) => {
@@ -325,7 +323,7 @@ const editNote = (index) => {
         if (!Array.isArray(notesArr)) {
             notesArr = Object.values(notesArr);
         }
-        const note = notesArr[index];
+        const note = notesArr[key];
         if (note) {
             editIndex = index;
             document.getElementById('editNoteTitle').value = note.noteTitle;
