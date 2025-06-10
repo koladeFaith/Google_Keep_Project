@@ -1,6 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
 import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
+// Your web app's Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyAfh8yKY_gXwzAbQ4HDt4uyKLAkNBkzhXI",
+    authDomain: "keep-e986b.firebaseapp.com",
+    databaseURL: "https://keep-e986b-default-rtdb.firebaseio.com",
+    projectId: "keep-e986b",
+    storageBucket: "keep-e986b.firebasestorage.app",
+    messagingSenderId: "746391927158",
+    appId: "1:746391927158:web:739393ce1bdbc3b945a257",
+};
 const app = initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
@@ -34,7 +44,7 @@ onValue(notesRef, (snapshot) => {
 });
 
 // Restore note from trash
-window.restoreNote = function (key) {
+const restoreNote = (key) => {
     const noteRef = ref(database, "notes/" + key);
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
@@ -45,7 +55,9 @@ window.restoreNote = function (key) {
 }
 
 // Permanently delete note
-window.deleteNoteForever = function (key) {
+const deleteNoteForever = (key) => {
     const noteRef = ref(database, "notes/" + key);
     remove(noteRef);
 }
+window.restoreNote = restoreNote
+window.deleteNoteForever = deleteNoteForever

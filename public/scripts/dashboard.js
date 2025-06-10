@@ -282,8 +282,9 @@ onValue(newRef, (snapshot) => {
     const data = snapshot.val();
     noteList.innerHTML = "";
     if (data) {
-        data.forEach((info, i) => {
-            if (!info.trashed) { // Only show notes NOT in trash
+        Object.keys(data).forEach((key) => {
+            const info = data[key];
+            if (!info.trashed) {
                 noteList.innerHTML += `
                     <div class="note-card">
                       <div id='note-card2'>
@@ -292,10 +293,10 @@ onValue(newRef, (snapshot) => {
                         ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                       </div>
                       <div id='hoverIcons'>
-                        <i onclick='deleteNote(${i})' class="bi bi-trash3 icons"></i>
-                        <i onclick='editNote(${i})' class="bi bi-pencil icons"></i>
-                        <i class="bi bi-archive icons"></i>
-                        <i class="bi bi-alarm icons"></i> 
+                        <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
+                        <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
+                        <i class="bi bi-archive icons" title="Archive"></i>
+                        <i class="bi bi-alarm icons" title="Reminder"></i> 
                       </div>
                     </div>
                 `;
@@ -316,20 +317,14 @@ const deleteNote = (key) => {
 }
 // EDIT NOTE FUNCTION
 const editNote = (key) => {
-    // Get notes from database
-    const notesRef = ref(database, "notes");
-    onValue(notesRef, (snapshot) => {
-        let notesArr = snapshot.val() || [];
-        if (!Array.isArray(notesArr)) {
-            notesArr = Object.values(notesArr);
-        }
-        const note = notesArr[key];
+    const noteRef = ref(database, "notes/" + key);
+    onValue(noteRef, (snapshot) => {
+        const note = snapshot.val();
         if (note) {
-            editIndex = index;
+            editIndex = key; // Save the key for saving later
             document.getElementById('editNoteTitle').value = note.noteTitle;
             document.getElementById('editNoteText').value = note.note;
 
-            // When opening the edit modal
             const editNoteImagePreview = document.getElementById('editNoteImagePreview');
             const removeEditImageBtn = document.getElementById('removeEditImageBtn');
 
@@ -348,6 +343,32 @@ const editNote = (key) => {
         }
     }, { onlyOnce: true });
 }
+// Save edited note (you need to update your notes array/database here)
+document.getElementById('saveEditBtn').addEventListener('click', () => {
+    const newTitle = document.getElementById('editNoteTitle').value;
+    const newText = document.getElementById('editNoteText').value;
+    if (newTitle === "" || newText === "") {
+        toast("Edited title and note cannot be empty.", '#f00', '#fff');
+        return;
+    }
+    const noteRef = ref(database, "notes/" + editIndex);
+
+    // Build the note object
+    const updatedNote = {
+        noteTitle: newTitle,
+        note: newText
+    };
+    if (!editImageRemoved && editNoteImagePreview.src && editNoteImagePreview.style.display !== "none") {
+        updatedNote.image = editNoteImagePreview.src;
+    }
+    // If image is removed or not present, don't set the image property at all
+
+    set(noteRef, updatedNote).then(() => {
+        noteEditModal.classList.remove('active');
+        mainContent.classList.remove('blur-bg');
+        toast("Note edited successfully", '#006400', '#fff');
+    });
+});
 // EDIT NOTE AND FOCUS MODAL
 const noteGrid = document.getElementById('note-grid');
 const noteEditModal = document.getElementById('noteEditModal');
@@ -389,37 +410,7 @@ noteEditModal.addEventListener('click', (e) => {
         mainContent.classList.remove('blur-bg');
     }
 });
-// Save edited note (you need to update your notes array/database here)
-document.getElementById('saveEditBtn').addEventListener('click', () => {
-    // Get new values
-    const newTitle = document.getElementById('editNoteTitle').value;
-    const newText = document.getElementById('editNoteText').value;
-    if (newTitle === "" || newTitle === "") {
-        toast("Edited title and note cannot be empty.", '#f00', '#fff');
-        return;
-    }
-    // TODO: Update your notes array/database at editIndex
-    // After saving:
-    const notesRef = ref(database, "notes");
-    onValue(notesRef, (snapshot) => {
-        let notesArr = snapshot.val() || [];
-        if (!Array.isArray(notesArr)) {
-            notesArr = Object.values(notesArr);
-        }
-        // Update the note at editIndex
-        notesArr[editIndex] = {
-            noteTitle: newTitle,
-            note: newText,
-            image: editImageRemoved ? "" : editNoteImagePreview.src
-        };
-        set(notesRef, notesArr);
 
-        noteEditModal.classList.remove('active');
-        mainContent.classList.remove('blur-bg');
-    }, { onlyOnce: true });
-    toast("Note edited sucessfully", '#006400', '#fff');
-
-});
 // REMOVE IMAGE
 const noteImageInput = document.getElementById('noteImage');
 const noteImagePreview = document.getElementById('noteImagePreview');
