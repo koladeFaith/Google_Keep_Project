@@ -55,39 +55,6 @@
           <div class="search-bar2" id="searchBar2" style="display: none">
             <input type="text" placeholder="Search notes..." />
           </div>
-          <!-- INPUT COLLAPSE -->
-          <div class="note-input-collapsible" id="noteInputCollapsible">
-            <!-- image removal -->
-            <div style="position: relative; display: inline-block;">
-                <img
-                  id="noteImagePreview"
-                  style="display: none; max-width: 100%; margin-bottom: 0px; border-radius: 8px;" />
-              <span
-                id="removeNoteImageBtn"
-                style="display: none; position: absolute; top: 4px; right: 4px; background: #232323cc; color: #fff; border-radius: 50%; padding: 1px 7px; cursor: pointer; font-size: 1.2em;">&times;</span>
-            </div>
-            <div class="note-top-row">
-              <input
-                id="noteTitle"
-                type="text"
-                placeholder="Title"
-                class="note-title" />
-              <label class="image-upload">
-                <input id="noteImage" type="file" accept="image/*" style="display: none;" />
-                <span title="Add image"><i class="bi bi-image"></i></span>
-              </label>
-            </div>
-            <div class="note-details" id="noteDetails" style="display: none">
-              <input
-                id="text"
-                type="text"
-                placeholder="Take a note..."
-                class="note-text" />
-              <div class="note-actions">
-                <button onclick="addNote()">Add Note</button>
-              </div>
-            </div>
-          </div>
           <!-- PROFILE MODAL -->
           <div id="profileModal" class="profile-modal">
             <div class="profile-modal-content">
@@ -119,6 +86,7 @@
           </div>
           <!-- SHOW OR DISPLAY NOTES -->
           <div id="note-grid" class="note-grid"></div>
+          <div id="archive-grid"></div>
         </main>
       </div>
     </div>

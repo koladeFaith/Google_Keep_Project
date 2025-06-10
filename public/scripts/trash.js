@@ -21,10 +21,12 @@ const notesRef = ref(database, "notes");
 onValue(notesRef, (snapshot) => {
     const data = snapshot.val();
     noteList.innerHTML = "";
+    let hasTrash = false; // Add this flag
     if (data) {
         Object.keys(data).forEach((key) => {
             const info = data[key];
             if (info.trashed) { // Only show trashed notes
+                hasTrash = true; // Set flag if at least one trashed note exists
                 noteList.innerHTML += `
                     <div class="note-card">
                         <div id='note-card2'>
@@ -40,6 +42,9 @@ onValue(notesRef, (snapshot) => {
                 `;
             }
         });
+    }
+    if (!hasTrash) {
+        noteList.innerHTML = `<div class="empty-message">Trash is empty</div>`;
     }
 });
 

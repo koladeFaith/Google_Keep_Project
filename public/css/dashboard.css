@@ -591,6 +591,37 @@ main {
   background: #232323;
   color: #a1c4fd;
 }
+/* Style for the archive grid container */
+#archive-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 30px 10px;
+  min-height: 200px;
+}
+
+/* Style for each note card */
+/* .note-card {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  padding: 20px;
+  transition: box-shadow 0.2s;
+  position: relative;
+} */
+
+.note-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+/* Style for the empty archive message */
+.empty-message {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #888;
+  font-size: 2rem;
+padding-top: 50px;
+}
 /* Hide sidebar by default on mobile */
 @media (max-width: 767px) {
   .logo {
