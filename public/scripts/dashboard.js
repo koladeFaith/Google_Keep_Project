@@ -181,18 +181,16 @@ profilePicForm.addEventListener('submit', function (e) {
         const reader = new FileReader();
         reader.onload = function (event) {
             const base64String = event.target.result;
-            // Save to Firebase (example path, adjust as needed)
             set(ref(database, 'users/' + auth.currentUser.uid + '/profilePic'), base64String)
                 .then(() => {
                     profileUploadBtn.style.display = "inline-block";
                     profileSubmitBtn.style.display = "none";
-                    toast("Profile picture updated!", '#006400', '#fff');
+                    toast("Profile picture updated!", '#42A5F5', '#fff'); // <-- Place toast here
                 });
         };
         reader.readAsDataURL(file);
     }
 });
-
 // NOTE FOCUS
 window.onload = function () {
     const notesLink = document.querySelector('a[href="#"] i.bi-journal-text').parentElement;
@@ -251,6 +249,7 @@ const addNote = () => {
             }
             notesArr.push({ noteTitle, note, image: imageBase64 });
             set(notesRef, notesArr);
+            toast("Note added successfully!", '##42A5F5', '#fff');
             // Clear inputs
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
@@ -281,10 +280,12 @@ const noteList = document.getElementById("note-grid")
 onValue(newRef, (snapshot) => {
     const data = snapshot.val();
     noteList.innerHTML = "";
+    let hasNotes = false;
     if (data) {
         Object.keys(data).forEach((key) => {
             const info = data[key];
             if (!info.trashed) {
+                hasNotes = true;
                 noteList.innerHTML += `
                     <div class="note-card">
                       <div id='note-card2'>
@@ -295,13 +296,16 @@ onValue(newRef, (snapshot) => {
                       <div id='hoverIcons'>
                         <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
                         <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
-                        <i class="bi bi-archive icons" title="Archive"></i>
+                        <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
                         <i class="bi bi-alarm icons" title="Reminder"></i> 
                       </div>
                     </div>
                 `;
             }
         });
+    }
+    if (!hasNotes) {
+        noteList.innerHTML = `<div class="empty-message">No notes yet. Your notes will appear here.</div>`;
     }
 });
 
@@ -311,7 +315,9 @@ const deleteNote = (key) => {
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
         if (note) {
-            set(noteRef, { ...note, trashed: true });
+            set(noteRef, { ...note, trashed: true }).then(() => {
+                toast("Note moved to trash!", '#42A5F5', '#000');
+            });
         }
     }, { onlyOnce: true });
 }
@@ -366,7 +372,7 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
     set(noteRef, updatedNote).then(() => {
         noteEditModal.classList.remove('active');
         mainContent.classList.remove('blur-bg');
-        toast("Note edited successfully", '#006400', '#fff');
+        toast("Note edited successfully", '#42A5F5', '#fff');
     });
 });
 // EDIT NOTE AND FOCUS MODAL
@@ -444,7 +450,18 @@ removeNoteImageBtn.addEventListener('click', function () {
     noteImageInput.value = "";
     removeNoteImageBtn.style.display = "none";
 });
-
+// ARCHIVE NOTE
+const archiveNote = (key) => {
+    const noteRef = ref(database, "notes/" + key);
+    onValue(noteRef, (snapshot) => {
+        const note = snapshot.val();
+        if (note) {
+            set(noteRef, { ...note, archived: true }).then(() => {
+                toast("Note archived!", '#42A5F5', '#fff');
+            });
+        }
+    }, { onlyOnce: true });
+}
 
 
 
@@ -453,3 +470,4 @@ window.addNote = addNote;
 window.searchBar = searchBar;
 window.deleteNote = deleteNote;
 window.editNote = editNote
+window.archiveNote = archiveNote;

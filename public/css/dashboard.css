@@ -622,6 +622,7 @@ main {
   font-size: 2rem;
 padding-top: 50px;
 }
+
 /* Hide sidebar by default on mobile */
 @media (max-width: 767px) {
   .logo {
