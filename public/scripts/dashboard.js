@@ -25,7 +25,7 @@ import {
     getDatabase,
     ref,
     set,
-    onValue, 
+    onValue,
 } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
 // Your web app's Firebase configuration
@@ -297,7 +297,7 @@ onValue(newRef, (snapshot) => {
                         <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
                         <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
                         <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
-                        <i class="bi bi-alarm icons" title="Reminder"></i> 
+                        <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
                       </div>
                     </div>
                 `;
@@ -462,7 +462,84 @@ const archiveNote = (key) => {
         }
     }, { onlyOnce: true });
 }
+// REMINDER NOTE
+const setReminder = (key) => {
+    const noteRef = ref(database, "notes/" + key);
+    onValue(noteRef, (snapshot) => {
+        const note = snapshot.val();
+        if (note) {
+            set(noteRef, { ...note, reminder: true }).then(() => {
+                toast("Reminder set!", '#42A5F5', '#fff');
+            });
+        }
+    }, { onlyOnce: true });
+};
 
+// Search note
+const noteSearch = document.getElementById('noteSearch');
+
+let searchQuery = "";
+
+if (noteSearch) {
+    noteSearch.addEventListener('input', function () {
+        searchQuery = this.value.toLowerCase();
+        renderNotes(); // Call the render function to update the UI
+    });
+}
+
+function highlightMatch(text, query) {
+    if (!query) return text;
+    // Escape regex special characters in query
+    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
+}
+
+function renderNotes() {
+    onValue(newRef, (snapshot) => {
+        const data = snapshot.val();
+        noteList.innerHTML = "";
+        let hasNotes = false;
+        if (data) {
+            Object.keys(data).forEach((key) => {
+                const info = data[key];
+                if (!info.trashed) {
+                    // Filter by search query (title or note)
+                    if (
+                        !searchQuery ||
+                        (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
+                        (info.note && info.note.toLowerCase().includes(searchQuery))
+                    ) {
+                        hasNotes = true;
+                        // Highlight matches
+                        const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
+                        const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
+                        noteList.innerHTML += `
+                            <div class="note-card">
+                              <div id='note-card2'>
+                                <h4>${highlightedTitle}</h4>
+                                <p style='padding-bottom: 30px'>${highlightedNote}</p>
+                                ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                              </div>
+                              <div id='hoverIcons'>
+                                <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
+                                <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
+                                <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
+                                <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
+                              </div>
+                            </div>
+                        `;
+                    }
+                }
+            });
+        }
+        if (!hasNotes) {
+            noteList.innerHTML = `<div class="empty-message">No notes found.</div>`;
+        }
+    }, { onlyOnce: true });
+}
+
+// Initial render
+renderNotes();
 
 
 
@@ -471,3 +548,5 @@ window.searchBar = searchBar;
 window.deleteNote = deleteNote;
 window.editNote = editNote
 window.archiveNote = archiveNote;
+window.setReminder = setReminder;
+

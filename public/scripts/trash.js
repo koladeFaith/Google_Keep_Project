@@ -144,7 +144,10 @@ logOut.addEventListener("click", () => {
         window.location = "signin.html";
     }, 1000);
 });
-
+// RELOAD ICON
+document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
+    window.location.reload();
+});
 // === USER INFO ===
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -217,5 +220,66 @@ const deleteNoteForever = (key) => {
         toast("Note deleted permanently", '#42A5F5', '#fff');
     });
 }
+// Search note
+const noteSearch = document.getElementById('noteSearch');
+
+let searchQuery = "";
+
+if (noteSearch) {
+    noteSearch.addEventListener('input', function () {
+        searchQuery = this.value.toLowerCase();
+        renderNotes(); // Call the render function to update the UI
+    });
+}
+
+function highlightMatch(text, query) {
+    if (!query) return text;
+    // Escape regex special characters in query
+    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
+}
+
+
+function renderTrashNotes() {
+    onValue(notesRef, (snapshot) => {
+        const data = snapshot.val();
+        noteList.innerHTML = "";
+        let hasTrash = false;
+        if (data) {
+            Object.keys(data).forEach((key) => {
+                const info = data[key];
+                if (info.trashed) {
+                    // Filter by search query
+                    if (
+                        !searchQuery ||
+                        (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
+                        (info.note && info.note.toLowerCase().includes(searchQuery))
+                    ) {
+                        hasTrash = true;
+                        noteList.innerHTML += `
+                            <div class="note-card">
+                                <div id='note-card2'>
+                                    <h4>${highlightMatch(info.noteTitle || "", searchQuery)}</h4>
+                                    <p style='padding-bottom: 30px'>${highlightMatch(info.note || "", searchQuery)}</p>
+                                    ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                                </div>
+                                <div id='hoverIcons'>
+                                    <i onclick='restoreNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Restore"></i>
+                                    <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+            });
+        }
+        if (!hasTrash) {
+            noteList.innerHTML = `<div class="empty-message">Trash is empty</div>`;
+        }
+    }, { onlyOnce: true });
+}
+
+// Initial render
+renderTrashNotes();
 window.restoreNote = restoreNote;
 window.deleteNoteForever = deleteNoteForever;

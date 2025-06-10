@@ -26,7 +26,7 @@
         </div>
         <div class="search-bar">
           <i class="bi bi-search mobile-search"></i>
-          <input type="text" placeholder="Search notes..." />
+          <input type="text" id="noteSearch" placeholder="Search notes...">
         </div>
         <!-- HEADER ICONS -->
         <div class="header-icons">
@@ -45,15 +45,15 @@
         <aside id="sidebar">
           <nav>
             <a href="dashboard.html"><i class="bi bi-journal-text"></i> Notes</a>
-            <a href="reminders.html"><i class="bi bi-alarm"></i> Reminders</a>
-            <a href="archive.html" class="active"><i class="bi bi-archive"></i> Archive</a>
+            <a href="reminders.html" class="active"><i class="bi bi-alarm"></i> Reminders</a>
+            <a href="archive.html" ><i class="bi bi-archive"></i> Archive</a>
             <a href="trash.html" class=""><i class="bi bi-trash"></i> Trash</a>
           </nav>
         </aside>
         <!-- MAIN  -->
         <main>
           <div class="search-bar2" id="searchBar2" style="display: none">
-            <input type="text" id="noteSearch" placeholder="Search notes...">
+            <input type="text" placeholder="Search notes..." />
           </div>
           <!-- PROFILE MODAL -->
           <div id="profileModal" class="profile-modal">
@@ -108,5 +108,5 @@
   <script
     type="text/javascript"
     src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
-  <script type="module" src="scripts/archive.js"></script>
+  <script type="module" src="scripts/reminders.js"></script>
 </html>

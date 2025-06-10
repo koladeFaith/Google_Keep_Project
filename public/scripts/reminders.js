@@ -1,5 +1,5 @@
 // Toastify
-const toast = (text, background = '#42A5F5', color) => {
+const toast = (text, background, color) => {
     Toastify({
         text: text,
         duration: 3000,
@@ -74,10 +74,6 @@ function searchBar() {
         searchBar2.style.display = "none";
     }
 }
-// RELOAD ICON
-document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
-    window.location.reload();
-});
 
 // === PROFILE MODAL ===
 const profileIcon = document.querySelector(".profileImg");
@@ -146,7 +142,10 @@ logOut.addEventListener("click", () => {
         window.location = "signin.html";
     }, 1000);
 });
-
+// RELOAD ICON
+document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
+    window.location.reload();
+});
 // === USER INFO ===
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -167,54 +166,55 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-
-const archiveList = document.getElementById("archive-grid");
+const reminderList = document.getElementById("reminder-grid");
 const notesRef = ref(database, "notes");
 
 onValue(notesRef, (snapshot) => {
     const data = snapshot.val();
     console.log(data); 
-    archiveList.innerHTML = "";
-    let hasArchive = false;
+    reminderList.innerHTML = "";
+    let hasReminder = false;
     if (data) {
         Object.keys(data).forEach((key) => {
             const info = data[key];
-            if (info.archived) {
-                hasArchive = true;
-                archiveList.innerHTML += `
-               <div class="note-card">
+            if (info.reminder) {
+                hasReminder = true;
+                reminderList.innerHTML += `
+                    <div class="note-card">
                         <div id='note-card2'>
                             <h4>${info.noteTitle}</h4>
                             <p style='padding-bottom: 30px'>${info.note}</p>
                             ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                         </div>
                         <div id='hoverIcons'>
-                            <i onclick='unarchiveNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Unarchive"></i>
+                            <i onclick='removeReminder("${key}")' class="bi bi-alarm icons" title="Remove Reminder"></i>
                             <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
                         </div>
                     </div>
-            `;
+                `;
             }
         });
     }
-    if (!hasArchive) {
-        archiveList.innerHTML = `<div class="empty-message">Archive note will show here</div>`;
+    if (!hasReminder) {
+        reminderList.innerHTML = `<div class="empty-message">Reminders will show here</div>`;
     }
 });
-// Unarchive note
-const unarchiveNote = (key) => {
+
+// Remove reminder
+const removeReminder = (key) => {
     const noteRef = ref(database, "notes/" + key);
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
         if (note) {
-            set(noteRef, { ...note, archived: false }).then(() => {
-                toast("Note unarchived!", '#42A5F5', '#fff');
+            const { reminder, ...rest } = note;
+            set(noteRef, rest).then(() => {
+                toast("Reminder removed!", '#42A5F5', '#fff');
             });
         }
     }, { onlyOnce: true });
-}
+};
 
-// Permanently delete note from archive
+// Permanently delete note from reminders
 const deleteNoteForever = (key) => {
     const noteRef = ref(database, "notes/" + key);
     remove(noteRef).then(() => {
@@ -222,7 +222,7 @@ const deleteNoteForever = (key) => {
     }).catch(() => {
         toast("Error deleting note", '#f00', '#fff');
     });
-}
+};
 // Search note
 const noteSearch = document.getElementById('noteSearch');
 
@@ -288,7 +288,6 @@ function renderNotes() {
 
 // Initial render
 renderNotes();
-
-window.searchBar = searchBar;
-window.unarchiveNote = unarchiveNote;
+window.removeReminder = removeReminder;
 window.deleteNoteForever = deleteNoteForever;
+window.searchBar = searchBar

@@ -622,7 +622,12 @@ main {
   font-size: 2rem;
 padding-top: 50px;
 }
-
+.search-highlight {
+  background: yellow;
+  color: #232323;
+  border-radius: 3px;
+  padding: 0 2px;
+}
 /* Hide sidebar by default on mobile */
 @media (max-width: 767px) {
   .logo {
