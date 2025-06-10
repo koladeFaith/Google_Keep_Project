@@ -1,5 +1,9 @@
-import { ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
-import { database } from "./firebase-config.js"; // adjust path if needed
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+
 
 const noteList = document.getElementById("note-grid");
 const notesRef = ref(database, "notes");

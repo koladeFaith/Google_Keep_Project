@@ -25,7 +25,7 @@ import {
     getDatabase,
     ref,
     set,
-    onValue, remove,
+    onValue, 
 } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
 // Your web app's Firebase configuration
