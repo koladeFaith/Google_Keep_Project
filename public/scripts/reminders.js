@@ -168,51 +168,50 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-const archiveList = document.getElementById("archive-grid");
+const reminderList = document.getElementById("archive-grid"); 
 const notesRef = ref(database, "notes");
-
 onValue(notesRef, (snapshot) => {
     const data = snapshot.val();
-    console.log(data);
-    archiveList.innerHTML = "";
-    let hasArchive = false;
+    reminderList.innerHTML = "";
+    let hasReminder = false;
     if (data) {
         Object.keys(data).forEach((key) => {
             const info = data[key];
-            if (info.archived) {
-                hasArchive = true;
-                archiveList.innerHTML += `
-               <div class="note-card">
+            if (info.reminder) {
+                hasReminder = true;
+                reminderList.innerHTML += `
+                    <div class="note-card">
                         <div id='note-card2'>
                             <h4>${info.noteTitle}</h4>
                             <p style='padding-bottom: 30px'>${info.note}</p>
                             ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                         </div>
                         <div id='hoverIcons'>
-                            <i onclick='unarchiveNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Unarchive"></i>
+                            <i onclick='removeReminder("${key}")' class="bi bi-alarm icons" title="Remove Reminder"></i>
                             <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
                         </div>
                     </div>
-            `;
+                `;
             }
         });
     }
-    if (!hasArchive) {
-        archiveList.innerHTML = `<div class="empty-message">Archive note will show here</div>`;
+    if (!hasReminder) {
+        reminderList.innerHTML = `<div class="empty-message">Reminders will show here</div>`;
     }
 });
-// Unarchive note
-const unarchiveNote = (key) => {
+
+// Remove reminder note
+const removeReminder = (key) => {
     const noteRef = ref(database, "notes/" + key);
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
         if (note) {
-            set(noteRef, { ...note, archived: false }).then(() => {
-                toast("Note unarchived!", '#42A5F5', '#fff');
+            set(noteRef, { ...note, reminder: false }).then(() => {
+                toast("Reminder removed!", '#42A5F5', '#fff');
             });
         }
     }, { onlyOnce: true });
-}
+};
 
 // Permanently delete note from archive
 const deleteNoteForever = (key) => {
@@ -223,14 +222,15 @@ const deleteNoteForever = (key) => {
         toast("Error deleting note", '#f00', '#fff');
     });
 }
-// Search note
+
+
+
 const noteSearch = document.getElementById('noteSearch');
 let searchQuery = "";
-
 if (noteSearch) {
     noteSearch.addEventListener('input', function () {
         searchQuery = this.value.toLowerCase();
-        renderArchiveNotes();
+        renderReminderNotes();
     });
 }
 
@@ -240,24 +240,24 @@ function highlightMatch(text, query) {
     return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
 }
 
-function renderArchiveNotes() {
+function renderReminderNotes() {
     onValue(notesRef, (snapshot) => {
         const data = snapshot.val();
-        archiveList.innerHTML = "";
-        let hasArchive = false;
+        reminderList.innerHTML = "";
+        let hasReminder = false;
         if (data) {
             Object.keys(data).forEach((key) => {
                 const info = data[key];
-                if (info.archived) {
+                if (info.reminder) {
                     if (
                         !searchQuery ||
                         (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
                         (info.note && info.note.toLowerCase().includes(searchQuery))
                     ) {
-                        hasArchive = true;
+                        hasReminder = true;
                         const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
                         const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
-                        archiveList.innerHTML += `
+                        reminderList.innerHTML += `
                             <div class="note-card">
                                 <div id='note-card2'>
                                     <h4>${highlightedTitle}</h4>
@@ -265,7 +265,7 @@ function renderArchiveNotes() {
                                     ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                                 </div>
                                 <div id='hoverIcons'>
-                                    <i onclick='unarchiveNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Unarchive"></i>
+                                    <i onclick='removeReminder("${key}")' class="bi bi-alarm icons" title="Remove Reminder"></i>
                                     <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
                                 </div>
                             </div>
@@ -274,15 +274,15 @@ function renderArchiveNotes() {
                 }
             });
         }
-        if (!hasArchive) {
-            archiveList.innerHTML = `<div class="empty-message">Archive note will show here</div>`;
+        if (!hasReminder) {
+            reminderList.innerHTML = `<div class="empty-message">Reminders will show here</div>`;
         }
     }, { onlyOnce: true });
 }
 
 // Initial render
-renderArchiveNotes();
+renderReminderNotes();
 
-window.searchBar = searchBar;
-window.unarchiveNote = unarchiveNote;
+window.removeReminder = removeReminder;
 window.deleteNoteForever = deleteNoteForever;
+
