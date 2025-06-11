@@ -225,69 +225,63 @@ const deleteNoteForever = (key) => {
 }
 // Search note
 const noteSearch = document.getElementById('noteSearch');
-
 let searchQuery = "";
 
 if (noteSearch) {
     noteSearch.addEventListener('input', function () {
         searchQuery = this.value.toLowerCase();
-        renderNotes(); // Call the render function to update the UI
+        renderArchiveNotes();
     });
 }
 
 function highlightMatch(text, query) {
     if (!query) return text;
-    // Escape regex special characters in query
     const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
 }
 
-function renderNotes() {
-    onValue(newRef, (snapshot) => {
+function renderArchiveNotes() {
+    onValue(notesRef, (snapshot) => {
         const data = snapshot.val();
-        noteList.innerHTML = "";
-        let hasNotes = false;
+        archiveList.innerHTML = "";
+        let hasArchive = false;
         if (data) {
             Object.keys(data).forEach((key) => {
                 const info = data[key];
-                if (!info.trashed) {
-                    // Filter by search query (title or note)
+                if (info.archived) {
                     if (
                         !searchQuery ||
                         (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
                         (info.note && info.note.toLowerCase().includes(searchQuery))
                     ) {
-                        hasNotes = true;
-                        // Highlight matches
+                        hasArchive = true;
                         const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
                         const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
-                        noteList.innerHTML += `
+                        archiveList.innerHTML += `
                             <div class="note-card">
-                              <div id='note-card2'>
-                                <h4>${highlightedTitle}</h4>
-                                <p style='padding-bottom: 30px'>${highlightedNote}</p>
-                                ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                              </div>
-                              <div id='hoverIcons'>
-                                <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
-                                <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
-                                <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
-                                <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
-                              </div>
+                                <div id='note-card2'>
+                                    <h4>${highlightedTitle}</h4>
+                                    <p style='padding-bottom: 30px'>${highlightedNote}</p>
+                                    ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                                </div>
+                                <div id='hoverIcons'>
+                                    <i onclick='unarchiveNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Unarchive"></i>
+                                    <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
+                                </div>
                             </div>
                         `;
                     }
                 }
             });
         }
-        if (!hasNotes) {
-            noteList.innerHTML = `<div class="empty-message">No notes found.</div>`;
+        if (!hasArchive) {
+            archiveList.innerHTML = `<div class="empty-message">Archive note will show here</div>`;
         }
     }, { onlyOnce: true });
 }
 
 // Initial render
-renderNotes();
+renderArchiveNotes();
 
 window.searchBar = searchBar;
 window.unarchiveNote = unarchiveNote;

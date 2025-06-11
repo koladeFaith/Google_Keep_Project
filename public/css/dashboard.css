@@ -623,7 +623,7 @@ main {
 padding-top: 50px;
 }
 .search-highlight {
-  background: yellow;
+  background: #808080;
   color: #232323;
   border-radius: 3px;
   padding: 0 2px;

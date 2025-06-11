@@ -21,6 +21,12 @@ body {
     top: 0;
     z-index: 10;
   }
+  .search-highlight {
+    background: #808080;
+    color: #232323;
+    border-radius: 3px;
+    padding: 0 2px;
+  }
   .logo {
     font-size: 28px;
     font-weight: bold;
