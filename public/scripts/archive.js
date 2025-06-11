@@ -168,10 +168,16 @@ onAuthStateChanged(auth, (user) => {
         const userUname = document.getElementById("userUname");
         if (userEmail) userEmail.textContent = user.email;
         if (userUname) userUname.textContent = user.displayName;
-        if (user.photoURL && profilePicPreview) {
-            profilePicPreview.src = user.photoURL;
-            profilePicPreview1.src = user.photoURL;
-        }
+
+        // Always load the profile picture from the database
+        const userPicRef = ref(database, 'users/' + user.uid + '/profilePic');
+        onValue(userPicRef, (snapshot) => {
+            const pic = snapshot.val();
+            if (pic) {
+                if (profilePicPreview) profilePicPreview.src = pic;
+                if (profilePicPreview1) profilePicPreview1.src = pic;
+            }
+        });
     } else {
         setTimeout(() => {
             window.location.href = "signin.html";

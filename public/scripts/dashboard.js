@@ -211,17 +211,18 @@ onAuthStateChanged(auth, (user) => {
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
         const userEmail = document.getElementById("userEmail");
         const userUname = document.getElementById("userUname");
-        console.log(user);
-        if (userEmail) {
-            userEmail.textContent = user.email;
-        }
-        if (userUname) {
-            userUname.textContent = user.displayName;
-        }
-        if (user.photoURL && profilePicPreview) {
-            profilePicPreview.src = user.photoURL;
-            profilePicPreview1.src = user.photoURL;
-        }
+        if (userEmail) userEmail.textContent = user.email;
+        if (userUname) userUname.textContent = user.displayName;
+
+        // Always load the profile picture from the database
+        const userPicRef = ref(database, 'users/' + user.uid + '/profilePic');
+        onValue(userPicRef, (snapshot) => {
+            const pic = snapshot.val();
+            if (pic) {
+                if (profilePicPreview) profilePicPreview.src = pic;
+                if (profilePicPreview1) profilePicPreview1.src = pic;
+            }
+        });
     } else {
         setTimeout(() => {
             window.location.href = "signin.html";
@@ -229,27 +230,22 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 // ADDNOTE FUNCTION
+const notesRef = ref(database, "notes");
+
 const addNote = () => {
     const note = document.getElementById("text").value;
     const noteTitle = document.getElementById("noteTitle").value;
-    const imageInput = document.getElementById('noteImage')
+    const imageInput = document.getElementById('noteImage');
     const imageFile = imageInput.files[0];
     if (noteTitle === "" || note === "") {
         toast("Please fill in both the title and the note.", '#f00', '#fff');
         return;
     }
 
-    // Function to actually add the note (with or without image)
     const saveNote = (imageBase64 = "") => {
-        const notesRef = ref(database, "notes");
-        onValue(notesRef, (snapshot) => {
-            let notesArr = snapshot.val() || [];
-            if (!Array.isArray(notesArr)) {
-                notesArr = Object.values(notesArr);
-            }
-            notesArr.push({ noteTitle, note, image: imageBase64 });
-            set(notesRef, notesArr);
-            toast("Note added successfully!", '##42A5F5', '#fff');
+        const newNote = { noteTitle, note, image: imageBase64 };
+        push(notesRef, newNote).then(() => {
+            toast("Note added successfully!", '#42A5F5', '#fff');
             // Clear inputs
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
@@ -257,9 +253,9 @@ const addNote = () => {
             imagePreview.style.display = "none";
             imageInput.value = "";
             removeNoteImageBtn.style.display = "none";
-        }, { onlyOnce: true });
+        });
     };
-    // If image is selected, read as Base64, then save
+
     if (imageFile) {
         const reader = new FileReader();
         reader.onload = function (event) {
@@ -270,7 +266,6 @@ const addNote = () => {
     } else {
         saveNote();
     }
-
 };
 
 
@@ -395,7 +390,7 @@ noteGrid.addEventListener('click', function (e) {
     // Find the note-card and its index
     const card = e.target.closest('.note-card');
     if (card) {
-        editIndex = Array.from(noteGrid.children).indexOf(card);
+        editIndex = card.getAttribute('data-key'); // Use the Firebase key!
         const title = card.querySelector('h4').textContent;
         const text = card.querySelector('p').textContent;
         document.getElementById('editNoteTitle').value = title;
