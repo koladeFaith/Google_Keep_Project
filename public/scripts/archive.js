@@ -138,7 +138,19 @@ profilePicForm.addEventListener('submit', function (e) {
         reader.readAsDataURL(file);
     }
 });
-
+// SEARCH BAR
+// function searchBar() {
+//     const searchBar2 = document.getElementById('searchBar2');
+//     // Toggle visibility
+//     if (searchBar2.style.display === "none" || searchBar2.style.display === "") {
+//         searchBar2.style.display = "block";
+//         // Optionally focus the input
+//         const input = searchBar2.querySelector('input');
+//         if (input) input.focus();
+//     } else {
+//         searchBar2.style.display = "none";
+//     }
+// }
 // === LOGOUT ===
 const logOut = document.getElementById("logOut");
 logOut.addEventListener("click", () => {

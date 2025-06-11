@@ -136,7 +136,120 @@ profilePicForm.addEventListener('submit', function (e) {
         reader.readAsDataURL(file);
     }
 });
+// // SEARCH BAR
+// function searchBar() {
+//     const searchBar2 = document.getElementById('searchBar2');
+//     // Toggle visibility
+//     if (searchBar2.style.display === "none" || searchBar2.style.display === "") {
+//         searchBar2.style.display = "block";
+//         // Optionally focus the input
+//         const input = searchBar2.querySelector('input');
+//         if (input) input.focus();
+//     } else {
+//         searchBar2.style.display = "none";
+//     }
+// }
+let editIndex = null;
+// EDIT NOTE FUNCTION
+const editNote = (key) => {
+    const noteRef = ref(database, "notes/" + key);
+    onValue(noteRef, (snapshot) => {
+        const note = snapshot.val();
+        if (note) {
+            editIndex = key; // Save the key for saving later
+            document.getElementById('editNoteTitle').value = note.noteTitle;
+            document.getElementById('editNoteText').value = note.note;
 
+            const editNoteImagePreview = document.getElementById('editNoteImagePreview');
+            const removeEditImageBtn = document.getElementById('removeEditImageBtn');
+
+            if (note.image) {
+                editNoteImagePreview.src = note.image;
+                editNoteImagePreview.style.display = "block";
+                removeEditImageBtn.style.display = "block";
+            } else {
+                editNoteImagePreview.src = "";
+                editNoteImagePreview.style.display = "none";
+                removeEditImageBtn.style.display = "none";
+            }
+            editImageRemoved = false;
+            noteEditModal.classList.add('active');
+            mainContent.classList.add('blur-bg');
+        }
+    }, { onlyOnce: true });
+}
+// Save edited note (you need to update your notes array/database here)
+document.getElementById('saveEditBtn').addEventListener('click', () => {
+    const newTitle = document.getElementById('editNoteTitle').value;
+    const newText = document.getElementById('editNoteText').value;
+    if (newTitle === "" || newText === "") {
+        toast("Edited title and note cannot be empty.", '#f00', '#fff');
+        return;
+    }
+    const noteRef = ref(database, "notes/" + editIndex);
+
+    // Fetch the existing note first to preserve all properties
+    onValue(noteRef, (snapshot) => {
+        const oldNote = snapshot.val();
+        if (oldNote) {
+            const updatedNote = {
+                ...oldNote,
+                noteTitle: newTitle,
+                note: newText
+            };
+            if (!editImageRemoved && editNoteImagePreview.src && editNoteImagePreview.style.display !== "none") {
+                updatedNote.image = editNoteImagePreview.src;
+            } else {
+                delete updatedNote.image;
+            }
+            set(noteRef, updatedNote).then(() => {
+                noteEditModal.classList.remove('active');
+                mainContent.classList.remove('blur-bg');
+                toast("Note edited successfully", '#42A5F5', '#fff');
+            });
+        }
+    }, { onlyOnce: true });
+});
+// EDIT NOTE AND FOCUS MODAL
+const noteGrid = document.getElementById('note-grid');
+const noteEditModal = document.getElementById('noteEditModal');
+const closeEditModal = document.getElementById('closeEditModal');
+const mainContent = document.querySelector('.body');
+
+// Show modal and blur background when a note is clicked
+noteGrid.addEventListener('click', function (e) {
+    // If the click is on an icon or inside #hoverIcons, do nothing
+    if (
+        e.target.classList.contains('icons') ||
+        e.target.closest('#hoverIcons')
+    ) {
+        return; // Don't open the edit modal
+    }
+
+    // Find the note-card and its index
+    const card = e.target.closest('.note-card');
+    if (card) {
+        editIndex = Array.from(noteGrid.children).indexOf(card);
+        const title = card.querySelector('h4').textContent;
+        const text = card.querySelector('p').textContent;
+        document.getElementById('editNoteTitle').value = title;
+        document.getElementById('editNoteText').value = text;
+        noteEditModal.classList.add('active');
+        mainContent.classList.add('blur-bg');
+    }
+});
+// Close modal and remove blur
+closeEditModal.addEventListener('click', () => {
+    noteEditModal.classList.remove('active');
+    mainContent.classList.remove('blur-bg');
+});
+// Close modal when clicking outside modal content
+noteEditModal.addEventListener('click', (e) => {
+    if (e.target === noteEditModal) {
+        noteEditModal.classList.remove('active');
+        mainContent.classList.remove('blur-bg');
+    }
+});
 // === LOGOUT ===
 const logOut = document.getElementById("logOut");
 logOut.addEventListener("click", () => {
@@ -182,18 +295,18 @@ onValue(notesRef, (snapshot) => {
             if (info.trashed) {
                 hasTrash = true;
                 noteList.innerHTML += `
-                    <div class="note-card">
-                        <div id='note-card2'>
-                            <h4>${info.noteTitle}</h4>
-                            <p style='padding-bottom: 30px'>${info.note}</p>
-                            ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                        </div>
-                        <div id='hoverIcons'>
-                            <i onclick='restoreNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Restore"></i>
-                            <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
-                        </div>
+                <div class="note-card" data-key="${key}">
+                    <div id='note-card2'>
+                        <h4>${info.noteTitle}</h4>
+                        <p style='padding-bottom: 30px'>${info.note}</p>
+                        ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                     </div>
-                `;
+                    <div id='hoverIcons'>
+                        <i onclick='restoreNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Restore"></i>
+                        <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
+                    </div>
+                </div>
+            `;
             }
         });
     }
@@ -222,45 +335,43 @@ const deleteNoteForever = (key) => {
 }
 // Search note
 const noteSearch = document.getElementById('noteSearch');
-
 let searchQuery = "";
 
 if (noteSearch) {
     noteSearch.addEventListener('input', function () {
         searchQuery = this.value.toLowerCase();
-        renderNotes(); // Call the render function to update the UI
+        renderTrashNotes();
     });
 }
 
 function highlightMatch(text, query) {
     if (!query) return text;
-    // Escape regex special characters in query
     const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
 }
 
-
 function renderTrashNotes() {
     onValue(notesRef, (snapshot) => {
         const data = snapshot.val();
-        noteList.innerHTML = "";
+        trashList.innerHTML = "";
         let hasTrash = false;
         if (data) {
             Object.keys(data).forEach((key) => {
                 const info = data[key];
                 if (info.trashed) {
-                    // Filter by search query
                     if (
                         !searchQuery ||
                         (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
                         (info.note && info.note.toLowerCase().includes(searchQuery))
                     ) {
                         hasTrash = true;
-                        noteList.innerHTML += `
+                        const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
+                        const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
+                        trashList.innerHTML += `
                             <div class="note-card">
                                 <div id='note-card2'>
-                                    <h4>${highlightMatch(info.noteTitle || "", searchQuery)}</h4>
-                                    <p style='padding-bottom: 30px'>${highlightMatch(info.note || "", searchQuery)}</p>
+                                    <h4>${highlightedTitle}</h4>
+                                    <p style='padding-bottom: 30px'>${highlightedNote}</p>
                                     ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                                 </div>
                                 <div id='hoverIcons'>
@@ -274,12 +385,14 @@ function renderTrashNotes() {
             });
         }
         if (!hasTrash) {
-            noteList.innerHTML = `<div class="empty-message">Trash is empty</div>`;
+            trashList.innerHTML = `<div class="empty-message">Trash is empty</div>`;
         }
     }, { onlyOnce: true });
 }
-
 // Initial render
 renderTrashNotes();
+
+window.editNote = editNote
 window.restoreNote = restoreNote;
 window.deleteNoteForever = deleteNoteForever;
+window.searchBar = searchBar

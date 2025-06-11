@@ -477,19 +477,23 @@ const setReminder = (key) => {
 
 // Search note
 const noteSearch = document.getElementById('noteSearch');
-
+const noteSearchMobile = document.getElementById('noteSearchMobile');
 let searchQuery = "";
 
+function handleSearchInput(e) {
+    searchQuery = e.target.value.toLowerCase();
+    renderNotes();
+}
+
 if (noteSearch) {
-    noteSearch.addEventListener('input', function () {
-        searchQuery = this.value.toLowerCase();
-        renderNotes(); // Call the render function to update the UI
-    });
+    noteSearch.addEventListener('input', handleSearchInput);
+}
+if (noteSearchMobile) {
+    noteSearchMobile.addEventListener('input', handleSearchInput);
 }
 
 function highlightMatch(text, query) {
     if (!query) return text;
-    // Escape regex special characters in query
     const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
 }
@@ -503,14 +507,12 @@ function renderNotes() {
             Object.keys(data).forEach((key) => {
                 const info = data[key];
                 if (!info.trashed) {
-                    // Filter by search query (title or note)
                     if (
                         !searchQuery ||
                         (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
                         (info.note && info.note.toLowerCase().includes(searchQuery))
                     ) {
                         hasNotes = true;
-                        // Highlight matches
                         const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
                         const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
                         noteList.innerHTML += `
