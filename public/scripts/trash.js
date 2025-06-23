@@ -149,6 +149,101 @@ profilePicForm.addEventListener('submit', function (e) {
 //         searchBar2.style.display = "none";
 //     }
 // }
+// EDIT NOTE FUNCTION
+const editNote = (key) => {
+    const noteRef = ref(database, "notes/" + key);
+    onValue(noteRef, (snapshot) => {
+        const note = snapshot.val();
+        if (note) {
+            editIndex = key; // Save the key for saving later
+            document.getElementById('editNoteTitle').value = note.noteTitle;
+            document.getElementById('editNoteText').value = note.note;
+
+            const editNoteImagePreview = document.getElementById('editNoteImagePreview');
+            const removeEditImageBtn = document.getElementById('removeEditImageBtn');
+
+            if (note.image) {
+                editNoteImagePreview.src = note.image;
+                editNoteImagePreview.style.display = "block";
+                removeEditImageBtn.style.display = "block";
+            } else {
+                editNoteImagePreview.src = "";
+                editNoteImagePreview.style.display = "none";
+                removeEditImageBtn.style.display = "none";
+            }
+            editImageRemoved = false;
+            noteEditModal.classList.add('active');
+            mainContent.classList.add('blur-bg');
+        }
+    }, { onlyOnce: true });
+}
+// Save edited note (you need to update your notes array/database here)
+document.getElementById('saveEditBtn').addEventListener('click', () => {
+    const newTitle = document.getElementById('editNoteTitle').value;
+    const newText = document.getElementById('editNoteText').value;
+    if (newTitle === "" || newText === "") {
+        toast("Edited title and note cannot be empty.", '#f00', '#fff');
+        return;
+    }
+    const noteRef = ref(database, "notes/" + editIndex);
+
+    // Build the note object
+    const updatedNote = {
+        noteTitle: newTitle,
+        note: newText
+    };
+    if (!editImageRemoved && editNoteImagePreview.src && editNoteImagePreview.style.display !== "none") {
+        updatedNote.image = editNoteImagePreview.src;
+    }
+    // If image is removed or not present, don't set the image property at all
+
+    set(noteRef, updatedNote).then(() => {
+        noteEditModal.classList.remove('active');
+        mainContent.classList.remove('blur-bg');
+        toast("Note edited successfully", '#42A5F5', '#fff');
+    });
+});
+// EDIT NOTE AND FOCUS MODAL
+const noteGrid = document.getElementById('note-grid');
+const noteEditModal = document.getElementById('noteEditModal');
+const closeEditModal = document.getElementById('closeEditModal');
+const mainContent = document.querySelector('.body');
+let editIndex = null;
+
+// Show modal and blur background when a note is clicked
+noteGrid.addEventListener('click', function (e) {
+    // If the click is on an icon or inside #hoverIcons, do nothing
+    if (
+        e.target.classList.contains('icons') ||
+        e.target.closest('#hoverIcons')
+    ) {
+        return; // Don't open the edit modal
+    }
+
+    // Find the note-card and its index
+    const card = e.target.closest('.note-card');
+    if (card) {
+        editIndex = Array.from(noteGrid.children).indexOf(card);
+        const title = card.querySelector('h4').textContent;
+        const text = card.querySelector('p').textContent;
+        document.getElementById('editNoteTitle').value = title;
+        document.getElementById('editNoteText').value = text;
+        noteEditModal.classList.add('active');
+        mainContent.classList.add('blur-bg');
+    }
+});
+// Close modal and remove blur
+closeEditModal.addEventListener('click', () => {
+    noteEditModal.classList.remove('active');
+    mainContent.classList.remove('blur-bg');
+});
+// Close modal when clicking outside modal content
+noteEditModal.addEventListener('click', (e) => {
+    if (e.target === noteEditModal) {
+        noteEditModal.classList.remove('active');
+        mainContent.classList.remove('blur-bg');
+    }
+});
 // === LOGOUT ===
 const logOut = document.getElementById("logOut");
 logOut.addEventListener("click", () => {
@@ -169,10 +264,16 @@ onAuthStateChanged(auth, (user) => {
         const userUname = document.getElementById("userUname");
         if (userEmail) userEmail.textContent = user.email;
         if (userUname) userUname.textContent = user.displayName;
-        if (user.photoURL && profilePicPreview) {
-            profilePicPreview.src = user.photoURL;
-            profilePicPreview1.src = user.photoURL;
-        }
+
+        // Always load the profile picture from the database
+        const userPicRef = ref(database, 'users/' + user.uid + '/profilePic');
+        onValue(userPicRef, (snapshot) => {
+            const pic = snapshot.val();
+            if (pic) {
+                if (profilePicPreview) profilePicPreview.src = pic;
+                if (profilePicPreview1) profilePicPreview1.src = pic;
+            }
+        });
     } else {
         setTimeout(() => {
             window.location.href = "signin.html";
