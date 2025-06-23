@@ -26,6 +26,7 @@ import {
     ref,
     set,
     onValue,
+    push,
 } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-database.js";
 
 // Your web app's Firebase configuration
@@ -204,9 +205,76 @@ logOut.addEventListener("click", () => {
         window.location = "signin.html";
     }, 1000);
 });
+let searchQuery = "";
+
+function highlightMatch(text, query) {
+    if (!query) return text;
+    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
+}
+function renderNotes() {
+    const notesRef = ref(database, "notes/" + auth.currentUser.uid);
+    onValue(notesRef, (snapshot) => {
+        const data = snapshot.val();
+        noteList.innerHTML = "";
+        let hasNotes = false;
+        if (data) {
+            Object.keys(data).forEach((key) => {
+                const info = data[key];
+                if (!info.trashed && !info.archived) {
+                    // Filter by search query
+                    if (
+                        !searchQuery ||
+                        (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
+                        (info.note && info.note.toLowerCase().includes(searchQuery))
+                    ) {
+                        hasNotes = true;
+                        const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
+                        const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
+                        noteList.innerHTML += `
+                            <div class="note-card" data-key="${key}">
+                              <div id='note-card2'>
+                                <h4>${highlightedTitle}</h4>
+                                <p style='padding-bottom: 30px'>${highlightedNote}</p>
+                                ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                              </div>
+                              <div id='hoverIcons'>
+                                                              <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
+                                <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
+                                <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
+                                <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
+                              </div>
+                            </div>
+                        `;
+                    }
+                }
+            });
+        }
+        if (!hasNotes) {
+            noteList.innerHTML = `<div class="empty-message">No notes found.</div>`;
+        }
+    }, { onlyOnce: true });
+}
+// Attach search event
+const noteSearch = document.getElementById('noteSearch');
+const noteSearchMobile = document.getElementById('noteSearchMobile');
+
+function handleSearchInput(e) {
+    searchQuery = e.target.value.toLowerCase();
+    renderNotes();
+}
+
+if (noteSearch) {
+    noteSearch.addEventListener('input', handleSearchInput);
+}
+if (noteSearchMobile) {
+    noteSearchMobile.addEventListener('input', handleSearchInput);
+}
+
 // ONAUTHSTATECHANGED I.E USER INFO
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        renderNotes();
         const profilePicPreview = document.getElementById("profilePicPreview");
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
         const userEmail = document.getElementById("userEmail");
@@ -223,6 +291,42 @@ onAuthStateChanged(auth, (user) => {
                 if (profilePicPreview1) profilePicPreview1.src = pic;
             }
         });
+        
+
+        // --- SHOW ONLY THIS USER'S NOTES ---
+        const notesRef = ref(database, "notes/" + user.uid);
+        onValue(notesRef, (snapshot) => {
+            const data = snapshot.val();
+            noteList.innerHTML = "";
+            let hasNotes = false;
+            if (data) {
+                Object.keys(data).forEach((key) => {
+                    const info = data[key];
+                    if (!info.trashed && !info.archived) {
+                        hasNotes = true;
+                        noteList.innerHTML += `
+                            <div class="note-card" data-key="${key}">
+                              <div id='note-card2'>
+                                <h4>${info.noteTitle}</h4>
+                                <p style='padding-bottom: 30px'>${info.note}</p>
+                                ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                              </div>
+                              <div id='hoverIcons'>
+                                <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
+                                <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
+                                <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
+                                <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
+                              </div>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            if (!hasNotes) {
+                noteList.innerHTML = `<div class="empty-message">No notes yet. Your notes will appear here.</div>`;
+            }
+        });
+        // --- END USER NOTES ---
     } else {
         setTimeout(() => {
             window.location.href = "signin.html";
@@ -233,86 +337,80 @@ onAuthStateChanged(auth, (user) => {
 const addNote = () => {
     const note = document.getElementById("text").value;
     const noteTitle = document.getElementById("noteTitle").value;
-    const imageInput = document.getElementById('noteImage')
+    const imageInput = document.getElementById('noteImage');
     const imageFile = imageInput.files[0];
+    const user = auth.currentUser;
+    if (!user) return;
+
     if (noteTitle === "" || note === "") {
         toast("Please fill in both the title and the note.", '#f00', '#fff');
         return;
     }
 
-    // Function to actually add the note 
-    const saveNote = (imageBase64 = "") => {
-        const notesRef = ref(database, "notes");
-        onValue(notesRef, (snapshot) => {
-            let notesArr = snapshot.val() || [];
-            if (!Array.isArray(notesArr)) {
-                notesArr = Object.values(notesArr);
-            }
-            notesArr.push({ noteTitle, note, image: imageBase64 });
-            set(notesRef, notesArr);
-            toast("Note added successfully!", '##42A5F5', '#fff');
-            // Clearing the  inputs
+    const saveNote = (noteTitle, note, imageBase64 = "") => {
+        const notesRef = ref(database, "notes/" + auth.currentUser.uid);
+        const newNote = { noteTitle, note, image: imageBase64 };
+        push(notesRef, newNote).then(() => {
+            toast("Note added successfully!", '#42A5F5', '#fff');
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
             imagePreview.src = "";
             imagePreview.style.display = "none";
             imageInput.value = "";
             removeNoteImageBtn.style.display = "none";
-        }, { onlyOnce: true });
+        });
     };
-    // If image is selected, read as Base64, then save
+
     if (imageFile) {
         const reader = new FileReader();
         reader.onload = function (event) {
-            const base64String = event.target.result;
-            saveNote(base64String);
+            saveNote(noteTitle, note, event.target.result);
         };
         reader.readAsDataURL(imageFile);
     } else {
-        saveNote();
+        saveNote(noteTitle, note);
     }
-
 };
 
 
 // DISPLAY NOTE ON UI
-let newRef = ref(database, "notes");
+// let newRef = ref(database, "notes");
 const noteList = document.getElementById("note-grid")
-onValue(newRef, (snapshot) => {
-    const data = snapshot.val();
-    noteList.innerHTML = "";
-    let hasNotes = false;
-    if (data) {
-        Object.keys(data).forEach((key) => {
-            const info = data[key];
-            if (!info.trashed) {
-                hasNotes = true;
-                noteList.innerHTML += `
-                    <div class="note-card">
-                      <div id='note-card2'>
-                        <h4>${info.noteTitle}</h4>
-                        <p style='padding-bottom: 30px'>${info.note}</p>
-                        ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                      </div>
-                      <div id='hoverIcons'>
-                        <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
-                        <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
-                        <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
-                        <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
-                      </div>
-                    </div>
-                `;
-            }
-        });
-    }
-    if (!hasNotes) {
-        noteList.innerHTML = `<div class="empty-message">No notes yet. Your notes will appear here.</div>`;
-    }
-});
+// onValue(newRef, (snapshot) => {
+//     const data = snapshot.val();
+//     noteList.innerHTML = "";
+//     let hasNotes = false;
+//     if (data) {
+//         Object.keys(data).forEach((key) => {
+//             const info = data[key];
+//             if (!info.trashed && !info.archived) {
+//                 hasNotes = true;
+//                 noteList.innerHTML += `
+//                     <div class="note-card">
+//                       <div id='note-card2'>
+//                         <h4>${info.noteTitle}</h4>
+//                         <p style='padding-bottom: 30px'>${info.note}</p>
+//                         ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+//                       </div>
+//                       <div id='hoverIcons'>
+//                         <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
+//                         <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
+//                         <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
+//                         <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
+//                       </div>
+//                     </div>
+//                 `;
+//             }
+//         });
+//     }
+//     if (!hasNotes) {
+//         noteList.innerHTML = `<div class="empty-message">No notes yet. Your notes will appear here.</div>`;
+//     }
+// });
 
 // DELETE NOTE FUNCTION
 const deleteNote = (key) => {
-    const noteRef = ref(database, "notes/" + key);
+    const noteRef = ref(database, "notes/" + auth.currentUser.uid + "/" + key);
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
         if (note) {
@@ -324,7 +422,7 @@ const deleteNote = (key) => {
 }
 // EDIT NOTE FUNCTION
 const editNote = (key) => {
-    const noteRef = ref(database, "notes/" + key);
+    const noteRef = ref(database, "notes/" + auth.currentUser.uid + "/" + key);
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
         if (note) {
@@ -358,7 +456,7 @@ document.getElementById('saveEditBtn').addEventListener('click', () => {
         toast("Edited title and note cannot be empty.", '#f00', '#fff');
         return;
     }
-    const noteRef = ref(database, "notes/" + editIndex);
+    const noteRef = ref(database, "notes/" + auth.currentUser.uid + "/" + editIndex);
 
     // Build the note object
     const updatedNote = {
@@ -389,7 +487,7 @@ noteGrid.addEventListener('click', function (e) {
         e.target.classList.contains('icons') ||
         e.target.closest('#hoverIcons')
     ) {
-        return; 
+        return;
     }
 
     // Find the note-card and its index
@@ -452,7 +550,7 @@ removeNoteImageBtn.addEventListener('click', function () {
 });
 // ARCHIVE NOTE
 const archiveNote = (key) => {
-    const noteRef = ref(database, "notes/" + key);
+    const noteRef = ref(database, "notes/" + auth.currentUser.uid + "/" + key);
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
         if (note) {
@@ -464,7 +562,7 @@ const archiveNote = (key) => {
 }
 // REMINDER NOTE
 const setReminder = (key) => {
-    const noteRef = ref(database, "notes/" + key);
+    const noteRef = ref(database, "notes/" + auth.currentUser.uid + "/" + key);
     onValue(noteRef, (snapshot) => {
         const note = snapshot.val();
         if (note) {
@@ -473,77 +571,7 @@ const setReminder = (key) => {
             });
         }
     }, { onlyOnce: true });
-};
-
-// Search note
-const noteSearch = document.getElementById('noteSearch');
-const noteSearchMobile = document.getElementById('noteSearchMobile');
-let searchQuery = "";
-
-function handleSearchInput(e) {
-    searchQuery = e.target.value.toLowerCase();
-    renderNotes();
 }
-
-if (noteSearch) {
-    noteSearch.addEventListener('input', handleSearchInput);
-}
-if (noteSearchMobile) {
-    noteSearchMobile.addEventListener('input', handleSearchInput);
-}
-
-function highlightMatch(text, query) {
-    if (!query) return text;
-    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
-}
-
-function renderNotes() {
-    onValue(newRef, (snapshot) => {
-        const data = snapshot.val();
-        noteList.innerHTML = "";
-        let hasNotes = false;
-        if (data) {
-            Object.keys(data).forEach((key) => {
-                const info = data[key];
-                if (!info.trashed) {
-                    if (
-                        !searchQuery ||
-                        (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
-                        (info.note && info.note.toLowerCase().includes(searchQuery))
-                    ) {
-                        hasNotes = true;
-                        const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
-                        const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
-                        noteList.innerHTML += `
-                            <div class="note-card">
-                              <div id='note-card2'>
-                                <h4>${highlightedTitle}</h4>
-                                <p style='padding-bottom: 30px'>${highlightedNote}</p>
-                                ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                              </div>
-                              <div id='hoverIcons'>
-                                <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
-                                <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
-                                <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
-                                <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
-                              </div>
-                            </div>
-                        `;
-                    }
-                }
-            });
-        }
-        if (!hasNotes) {
-            noteList.innerHTML = `<div class="empty-message">No notes found.</div>`;
-        }
-    }, { onlyOnce: true });
-}
-
-// Initial render
-renderNotes();
-
-
 
 window.addNote = addNote;
 window.searchBar = searchBar;

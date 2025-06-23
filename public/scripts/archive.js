@@ -162,6 +162,7 @@ logOut.addEventListener("click", () => {
 // === USER INFO ===
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        // Profile info (optional)
         const profilePicPreview = document.getElementById("profilePicPreview");
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
         const userEmail = document.getElementById("userEmail");
@@ -169,7 +170,7 @@ onAuthStateChanged(auth, (user) => {
         if (userEmail) userEmail.textContent = user.email;
         if (userUname) userUname.textContent = user.displayName;
 
-        // Always load the profile picture from the database
+        // Profile picture
         const userPicRef = ref(database, 'users/' + user.uid + '/profilePic');
         onValue(userPicRef, (snapshot) => {
             const pic = snapshot.val();
@@ -178,6 +179,93 @@ onAuthStateChanged(auth, (user) => {
                 if (profilePicPreview1) profilePicPreview1.src = pic;
             }
         });
+
+        const archiveList = document.getElementById("archive-grid");
+        const notesRef = ref(database, "notes/" + user.uid);
+        let searchQuery = "";
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
+        }
+
+        function renderArchiveNotes() {
+            onValue(notesRef, (snapshot) => {
+                const data = snapshot.val();
+                archiveList.innerHTML = "";
+                let hasArchive = false;
+                if (data) {
+                    Object.keys(data).forEach((key) => {
+                        const info = data[key];
+                        if (info.archived) {
+                            if (
+                                !searchQuery ||
+                                (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
+                                (info.note && info.note.toLowerCase().includes(searchQuery))
+                            ) {
+                                hasArchive = true;
+                                const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
+                                const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
+                                archiveList.innerHTML += `
+                                    <div class="note-card">
+                                        <div id='note-card2'>
+                                            <h4>${highlightedTitle}</h4>
+                                            <p style='padding-bottom: 30px'>${highlightedNote}</p>
+                                            ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                                        </div>
+                                        <div id='hoverIcons'>
+                                            <i onclick='unarchiveNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Unarchive"></i>
+                                            <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    });
+                }
+                if (!hasArchive) {
+                    archiveList.innerHTML = `<div class="empty-message">Archive note will show here</div>`;
+                }
+            });
+        }
+
+        // Search input
+        const noteSearch = document.getElementById('noteSearch');
+        if (noteSearch) {
+            noteSearch.addEventListener('input', function () {
+                searchQuery = this.value.toLowerCase();
+                renderArchiveNotes();
+            });
+        }
+
+        // Unarchive note
+        window.unarchiveNote = (key) => {
+            const noteRef = ref(database, "notes/" + user.uid + "/" + key);
+            onValue(noteRef, (snapshot) => {
+                const note = snapshot.val();
+                if (note) {
+                    set(noteRef, { ...note, archived: false }).then(() => {
+                        toast("Note unarchived!", '#42A5F5', '#fff');
+                        renderArchiveNotes();
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Permanently delete note from archive
+        window.deleteNoteForever = (key) => {
+            const noteRef = ref(database, "notes/" + user.uid + "/" + key);
+            remove(noteRef).then(() => {
+                toast("Note deleted permanently", '#42A5F5', '#fff');
+                renderArchiveNotes();
+            }).catch(() => {
+                toast("Error deleting note", '#f00', '#fff');
+            });
+        };
+
+        // Initial render
+        renderArchiveNotes();
     } else {
         setTimeout(() => {
             window.location.href = "signin.html";
@@ -185,122 +273,5 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-
-const archiveList = document.getElementById("archive-grid");
-const notesRef = ref(database, "notes");
-
-onValue(notesRef, (snapshot) => {
-    const data = snapshot.val();
-    console.log(data); 
-    archiveList.innerHTML = "";
-    let hasArchive = false;
-    if (data) {
-        Object.keys(data).forEach((key) => {
-            const info = data[key];
-            if (info.archived) {
-                hasArchive = true;
-                archiveList.innerHTML += `
-               <div class="note-card">
-                        <div id='note-card2'>
-                            <h4>${info.noteTitle}</h4>
-                            <p style='padding-bottom: 30px'>${info.note}</p>
-                            ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                        </div>
-                        <div id='hoverIcons'>
-                            <i onclick='unarchiveNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Unarchive"></i>
-                            <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
-                        </div>
-                    </div>
-            `;
-            }
-        });
-    }
-    if (!hasArchive) {
-        archiveList.innerHTML = `<div class="empty-message">Archive note will show here</div>`;
-    }
-});
-// Unarchive note
-const unarchiveNote = (key) => {
-    const noteRef = ref(database, "notes/" + key);
-    onValue(noteRef, (snapshot) => {
-        const note = snapshot.val();
-        if (note) {
-            set(noteRef, { ...note, archived: false }).then(() => {
-                toast("Note unarchived!", '#42A5F5', '#fff');
-            });
-        }
-    }, { onlyOnce: true });
-}
-
-// Permanently delete note from archive
-const deleteNoteForever = (key) => {
-    const noteRef = ref(database, "notes/" + key);
-    remove(noteRef).then(() => {
-        toast("Note deleted permanently", '#42A5F5', '#fff');
-    }).catch(() => {
-        toast("Error deleting note", '#f00', '#fff');
-    });
-}
-// Search note
-const noteSearch = document.getElementById('noteSearch');
-let searchQuery = "";
-
-if (noteSearch) {
-    noteSearch.addEventListener('input', function () {
-        searchQuery = this.value.toLowerCase();
-        renderArchiveNotes();
-    });
-}
-
-function highlightMatch(text, query) {
-    if (!query) return text;
-    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
-}
-
-function renderArchiveNotes() {
-    onValue(notesRef, (snapshot) => {
-        const data = snapshot.val();
-        archiveList.innerHTML = "";
-        let hasArchive = false;
-        if (data) {
-            Object.keys(data).forEach((key) => {
-                const info = data[key];
-                if (info.archived) {
-                    if (
-                        !searchQuery ||
-                        (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
-                        (info.note && info.note.toLowerCase().includes(searchQuery))
-                    ) {
-                        hasArchive = true;
-                        const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
-                        const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
-                        archiveList.innerHTML += `
-                            <div class="note-card">
-                                <div id='note-card2'>
-                                    <h4>${highlightedTitle}</h4>
-                                    <p style='padding-bottom: 30px'>${highlightedNote}</p>
-                                    ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                                </div>
-                                <div id='hoverIcons'>
-                                    <i onclick='unarchiveNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Unarchive"></i>
-                                    <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-            });
-        }
-        if (!hasArchive) {
-            archiveList.innerHTML = `<div class="empty-message">Archive note will show here</div>`;
-        }
-    }, { onlyOnce: true });
-}
-
-// Initial render
-renderArchiveNotes();
-
 window.searchBar = searchBar;
-window.unarchiveNote = unarchiveNote;
-window.deleteNoteForever = deleteNoteForever;
+

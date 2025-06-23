@@ -166,6 +166,93 @@ onAuthStateChanged(auth, (user) => {
                 if (profilePicPreview1) profilePicPreview1.src = pic;
             }
         });
+
+        const reminderList = document.getElementById("archive-grid");
+        const notesRef = ref(database, "notes/" + user.uid);
+        let searchQuery = "";
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
+        }
+
+        function renderReminderNotes() {
+            onValue(notesRef, (snapshot) => {
+                const data = snapshot.val();
+                reminderList.innerHTML = "";
+                let hasReminder = false;
+                if (data) {
+                    Object.keys(data).forEach((key) => {
+                        const info = data[key];
+                        if (info.reminder) {
+                            if (
+                                !searchQuery ||
+                                (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
+                                (info.note && info.note.toLowerCase().includes(searchQuery))
+                            ) {
+                                hasReminder = true;
+                                const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
+                                const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
+                                reminderList.innerHTML += `
+                                    <div class="note-card">
+                                        <div id='note-card2'>
+                                            <h4>${highlightedTitle}</h4>
+                                            <p style='padding-bottom: 30px'>${highlightedNote}</p>
+                                            ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                                        </div>
+                                        <div id='hoverIcons'>
+                                            <i onclick='removeReminder("${key}")' class="bi bi-alarm icons" title="Remove Reminder"></i>
+                                            <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    });
+                }
+                if (!hasReminder) {
+                    reminderList.innerHTML = `<div class="empty-message">Reminders will show here</div>`;
+                }
+            });
+        }
+
+        // Search input
+        const noteSearch = document.getElementById('noteSearch');
+        if (noteSearch) {
+            noteSearch.addEventListener('input', function () {
+                searchQuery = this.value.toLowerCase();
+                renderReminderNotes();
+            });
+        }
+
+        // Remove reminder note
+        window.removeReminder = (key) => {
+            const noteRef = ref(database, "notes/" + user.uid + "/" + key);
+            onValue(noteRef, (snapshot) => {
+                const note = snapshot.val();
+                if (note) {
+                    set(noteRef, { ...note, reminder: false }).then(() => {
+                        toast("Reminder removed!", '#42A5F5', '#fff');
+                        renderReminderNotes();
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Permanently delete note from reminders
+        window.deleteNoteForever = (key) => {
+            const noteRef = ref(database, "notes/" + user.uid + "/" + key);
+            remove(noteRef).then(() => {
+                toast("Note deleted permanently", '#42A5F5', '#fff');
+                renderReminderNotes();
+            }).catch(() => {
+                toast("Error deleting note", '#f00', '#fff');
+            });
+        };
+
+        // Initial render
+        renderReminderNotes();
     } else {
         setTimeout(() => {
             window.location.href = "signin.html";
@@ -173,123 +260,5 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-
-const reminderList = document.getElementById("archive-grid");
-const notesRef = ref(database, "notes");
-onValue(notesRef, (snapshot) => {
-    const data = snapshot.val();
-    reminderList.innerHTML = "";
-    let hasReminder = false;
-    if (data) {
-        Object.keys(data).forEach((key) => {
-            const info = data[key];
-            if (info.reminder) {
-                hasReminder = true;
-                reminderList.innerHTML += `
-                    <div class="note-card">
-                        <div id='note-card2'>
-                            <h4>${info.noteTitle}</h4>
-                            <p style='padding-bottom: 30px'>${info.note}</p>
-                            ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                        </div>
-                        <div id='hoverIcons'>
-                            <i onclick='removeReminder("${key}")' class="bi bi-alarm icons" title="Remove Reminder"></i>
-                            <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
-                        </div>
-                    </div>
-                `;
-            }
-        });
-    }
-    if (!hasReminder) {
-        reminderList.innerHTML = `<div class="empty-message">Reminders will show here</div>`;
-    }
-});
-
-// Remove reminder note
-const removeReminder = (key) => {
-    const noteRef = ref(database, "notes/" + key);
-    onValue(noteRef, (snapshot) => {
-        const note = snapshot.val();
-        if (note) {
-            set(noteRef, { ...note, reminder: false }).then(() => {
-                toast("Reminder removed!", '#42A5F5', '#fff');
-            });
-        }
-    }, { onlyOnce: true });
-};
-
-// Permanently delete note from archive
-const deleteNoteForever = (key) => {
-    const noteRef = ref(database, "notes/" + key);
-    remove(noteRef).then(() => {
-        toast("Note deleted permanently", '#42A5F5', '#fff');
-    }).catch(() => {
-        toast("Error deleting note", '#f00', '#fff');
-    });
-}
-
-
-
-const noteSearch = document.getElementById('noteSearch');
-let searchQuery = "";
-if (noteSearch) {
-    noteSearch.addEventListener('input', function () {
-        searchQuery = this.value.toLowerCase();
-        renderReminderNotes();
-    });
-}
-
-function highlightMatch(text, query) {
-    if (!query) return text;
-    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
-}
-
-function renderReminderNotes() {
-    onValue(notesRef, (snapshot) => {
-        const data = snapshot.val();
-        reminderList.innerHTML = "";
-        let hasReminder = false;
-        if (data) {
-            Object.keys(data).forEach((key) => {
-                const info = data[key];
-                if (info.reminder) {
-                    if (
-                        !searchQuery ||
-                        (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
-                        (info.note && info.note.toLowerCase().includes(searchQuery))
-                    ) {
-                        hasReminder = true;
-                        const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
-                        const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
-                        reminderList.innerHTML += `
-                            <div class="note-card">
-                                <div id='note-card2'>
-                                    <h4>${highlightedTitle}</h4>
-                                    <p style='padding-bottom: 30px'>${highlightedNote}</p>
-                                    ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                                </div>
-                                <div id='hoverIcons'>
-                                    <i onclick='removeReminder("${key}")' class="bi bi-alarm icons" title="Remove Reminder"></i>
-                                    <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-            });
-        }
-        if (!hasReminder) {
-            reminderList.innerHTML = `<div class="empty-message">Reminders will show here</div>`;
-        }
-    }, { onlyOnce: true });
-}
-
-// Initial render
-renderReminderNotes();
-
-window.removeReminder = removeReminder;
-window.deleteNoteForever = deleteNoteForever;
-window.searchBar = searchBar
+window.searchBar = searchBar;
 

@@ -98,6 +98,9 @@ const signUpUser = () => {
                 if (errorCode === 'auth/invalid-recipient-email') {
                     toast('Invalid recipient email address.', "#f00", "#fff");
                 }
+                if (errorCode === 'auth/network-request-failed') {
+                    toast('Invalid credential.', "#f00", "#fff");
+                }
             })
 
     }
@@ -140,6 +143,9 @@ const signUpGoogle = () => {
             if (errorCode === 'auth/invalid-credential') {
                 toastify('The credential received is malformed or has expired.', "#f00", "#fff");
             }
+            if (errorCode === 'auth/network-request-failed') {
+                toast('Invalid credential.', "#f00", "#fff");
+            }
         })
 }
 
@@ -179,6 +185,9 @@ const signUpGithub = () => {
             }
             if (errorCode === 'auth/invalid-credential') {
                 toastify('The credential received is malformed or has expired.', "#f00", "#fff");
+            }
+            if (errorCode === 'auth/network-request-failed') {
+                toast('Invalid credential.', "#f00", "#fff");
             }
         })
 }

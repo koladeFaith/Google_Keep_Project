@@ -258,6 +258,7 @@ document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
 // === USER INFO ===
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        // Profile info (optional)
         const profilePicPreview = document.getElementById("profilePicPreview");
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
         const userEmail = document.getElementById("userEmail");
@@ -265,7 +266,7 @@ onAuthStateChanged(auth, (user) => {
         if (userEmail) userEmail.textContent = user.email;
         if (userUname) userUname.textContent = user.displayName;
 
-        // Always load the profile picture from the database
+        // Profile picture
         const userPicRef = ref(database, 'users/' + user.uid + '/profilePic');
         onValue(userPicRef, (snapshot) => {
             const pic = snapshot.val();
@@ -274,123 +275,97 @@ onAuthStateChanged(auth, (user) => {
                 if (profilePicPreview1) profilePicPreview1.src = pic;
             }
         });
+
+
+        const noteList = document.getElementById("note-grid");
+        const notesRef = ref(database, "notes/" + user.uid);
+        let searchQuery = "";
+
+        function highlightMatch(text, query) {
+            if (!query) return text;
+            const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
+        }
+
+        function renderTrashNotes() {
+            onValue(notesRef, (snapshot) => {
+                const data = snapshot.val();
+                noteList.innerHTML = "";
+                let hasTrash = false;
+                if (data) {
+                    Object.keys(data).forEach((key) => {
+                        const info = data[key];
+                        if (info.trashed) {
+                            if (
+                                !searchQuery ||
+                                (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
+                                (info.note && info.note.toLowerCase().includes(searchQuery))
+                            ) {
+                                hasTrash = true;
+                                const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
+                                const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
+                                noteList.innerHTML += `
+                                    <div class="note-card">
+                                        <div id='note-card2'>
+                                            <h4>${highlightedTitle}</h4>
+                                            <p style='padding-bottom: 30px'>${highlightedNote}</p>
+                                            ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
+                                        </div>
+                                        <div id='hoverIcons'>
+                                            <i onclick='restoreNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Restore"></i>
+                                            <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
+                                        </div>
+                                    </div>
+                                `;
+                            }
+                        }
+                    });
+                }
+                if (!hasTrash) {
+                    noteList.innerHTML = `<div class="empty-message">Trash is empty</div>`;
+                }
+            });
+        }
+
+        // Search input
+        const noteSearch = document.getElementById('noteSearch');
+        if (noteSearch) {
+            noteSearch.addEventListener('input', function () {
+                searchQuery = this.value.toLowerCase();
+                renderTrashNotes();
+            });
+        }
+
+        // Restore and delete forever
+        window.restoreNote = (key) => {
+            const noteRef = ref(database, "notes/" + user.uid + "/" + key);
+            onValue(noteRef, (snapshot) => {
+                const note = snapshot.val();
+                if (note) {
+                    set(noteRef, { ...note, trashed: false }).then(() => {
+                        toast("Note restored!", '#42A5F5', '#fff');
+                        renderTrashNotes();
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        window.deleteNoteForever = (key) => {
+            const noteRef = ref(database, "notes/" + user.uid + "/" + key);
+            remove(noteRef).then(() => {
+                toast("Note deleted permanently", '#42A5F5', '#fff');
+                renderTrashNotes();
+            });
+        };
+
+        // Initial render
+        renderTrashNotes();
     } else {
         setTimeout(() => {
             window.location.href = "signin.html";
         }, 1000);
     }
 });
-
-// === TRASH NOTES DISPLAY (already in your code, just add toast to delete) ===
-const noteList = document.getElementById("note-grid");
-const notesRef = ref(database, "notes");
-
-onValue(notesRef, (snapshot) => {
-    const data = snapshot.val();
-    noteList.innerHTML = "";
-    let hasTrash = false;
-    if (data) {
-        Object.keys(data).forEach((key) => {
-            const info = data[key];
-            if (info.trashed) {
-                hasTrash = true;
-                noteList.innerHTML += `
-                <div class="note-card" data-key="${key}">
-                    <div id='note-card2'>
-                        <h4>${info.noteTitle}</h4>
-                        <p style='padding-bottom: 30px'>${info.note}</p>
-                        ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                    </div>
-                    <div id='hoverIcons'>
-                        <i onclick='restoreNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Restore"></i>
-                        <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
-                    </div>
-                </div>
-            `;
-            }
-        });
-    }
-    if (!hasTrash) {
-        noteList.innerHTML = `<div class="empty-message">Trash is empty</div>`;
-    }
-});
-
-// === RESTORE AND DELETE FUNCTIONS WITH TOAST ===
-const restoreNote = (key) => {
-    const noteRef = ref(database, "notes/" + key);
-    onValue(noteRef, (snapshot) => {
-        const note = snapshot.val();
-        if (note) {
-            set(noteRef, { ...note, trashed: false }).then(() => {
-                toast("Note restored!", '#42A5F5', '#fff');
-            });
-        }
-    }, { onlyOnce: true });
-}
-const deleteNoteForever = (key) => {
-    const noteRef = ref(database, "notes/" + key);
-    remove(noteRef).then(() => {
-        toast("Note deleted permanently", '#42A5F5', '#fff');
-    });
-}
-// Search note
-const noteSearch = document.getElementById('noteSearch');
-let searchQuery = "";
-
-if (noteSearch) {
-    noteSearch.addEventListener('input', function () {
-        searchQuery = this.value.toLowerCase();
-        renderTrashNotes();
-    });
-}
-
-function highlightMatch(text, query) {
-    if (!query) return text;
-    const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
-}
-
-function renderTrashNotes() {
-    onValue(notesRef, (snapshot) => {
-        const data = snapshot.val();
-        trashList.innerHTML = "";
-        let hasTrash = false;
-        if (data) {
-            Object.keys(data).forEach((key) => {
-                const info = data[key];
-                if (info.trashed) {
-                    if (
-                        !searchQuery ||
-                        (info.noteTitle && info.noteTitle.toLowerCase().includes(searchQuery)) ||
-                        (info.note && info.note.toLowerCase().includes(searchQuery))
-                    ) {
-                        hasTrash = true;
-                        const highlightedTitle = info.noteTitle ? highlightMatch(info.noteTitle, searchQuery) : "";
-                        const highlightedNote = info.note ? highlightMatch(info.note, searchQuery) : "";
-                        trashList.innerHTML += `
-                            <div class="note-card">
-                                <div id='note-card2'>
-                                    <h4>${highlightedTitle}</h4>
-                                    <p style='padding-bottom: 30px'>${highlightedNote}</p>
-                                    ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                                </div>
-                                <div id='hoverIcons'>
-                                    <i onclick='restoreNote("${key}")' class="bi bi-arrow-counterclockwise icons" title="Restore"></i>
-                                    <i onclick='deleteNoteForever("${key}")' class="bi bi-trash3 icons" title="Delete Forever"></i>
-                                </div>
-                            </div>
-                        `;
-                    }
-                }
-            });
-        }
-        if (!hasTrash) {
-            trashList.innerHTML = `<div class="empty-message">Trash is empty</div>`;
-        }
-    }, { onlyOnce: true });
-}
-// Initial render
-renderTrashNotes();
 
 window.editNote = editNote
 window.restoreNote = restoreNote;
