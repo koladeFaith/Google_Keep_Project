@@ -240,7 +240,7 @@ const addNote = () => {
         return;
     }
 
-    // Function to actually add the note (with or without image)
+    // Function to actually add the note 
     const saveNote = (imageBase64 = "") => {
         const notesRef = ref(database, "notes");
         onValue(notesRef, (snapshot) => {
@@ -251,7 +251,7 @@ const addNote = () => {
             notesArr.push({ noteTitle, note, image: imageBase64 });
             set(notesRef, notesArr);
             toast("Note added successfully!", '##42A5F5', '#fff');
-            // Clear inputs
+            // Clearing the  inputs
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
             imagePreview.src = "";
@@ -385,12 +385,11 @@ let editIndex = null;
 
 // Show modal and blur background when a note is clicked
 noteGrid.addEventListener('click', function (e) {
-    // If the click is on an icon or inside #hoverIcons, do nothing
     if (
         e.target.classList.contains('icons') ||
         e.target.closest('#hoverIcons')
     ) {
-        return; // Don't open the edit modal
+        return; 
     }
 
     // Find the note-card and its index
