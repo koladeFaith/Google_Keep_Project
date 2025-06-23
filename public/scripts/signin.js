@@ -65,6 +65,7 @@ const signInUser = () => {
                     user ? setTimeout(() => {
                         window.location.href = 'dashboard.html'
                     }, 1000) : window.location.href = 'index.html'
+                    localStorage.setItem("userCredential", JSON.stringify(user))
                 } else {
                     toast("Please verify your email before signing in.", "#f00", "#fff");
                     // Optionally, resend verification email
