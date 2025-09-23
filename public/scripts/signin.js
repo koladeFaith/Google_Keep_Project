@@ -18,7 +18,7 @@ const toast = (text, background, color) => {
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -34,6 +34,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
+const provider2 = new GithubAuthProvider();
 
 // SIGN IN USER
 const signInUser = () => {
@@ -150,7 +151,7 @@ const signInGoogle = () => {
 
 // GITHUB SIGN UP
 const signInGithub = () => {
-    signInWithPopup(auth, provider)
+    signInWithPopup(auth, provider2)
         .then((result) => {
             const user = result.user;
             console.log(user);
