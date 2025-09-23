@@ -17,18 +17,17 @@ const toast = (text, background, color) => {
 }
 
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAfh8yKY_gXwzAbQ4HDt4uyKLAkNBkzhXI",
-    authDomain: "keep-e986b.firebaseapp.com",
-    databaseURL: "https://keep-e986b-default-rtdb.firebaseio.com",
-    projectId: "keep-e986b",
-    storageBucket: "keep-e986b.firebasestorage.app",
-    messagingSenderId: "746391927158",
-    appId: "1:746391927158:web:739393ce1bdbc3b945a257"
+    apiKey: "AIzaSyAHuPoJHhLK2ilNWZVL6hWgFpp66-PY8nI",
+    authDomain: "keep-5faf9.firebaseapp.com",
+    projectId: "keep-5faf9",
+    storageBucket: "keep-5faf9.firebasestorage.app",
+    messagingSenderId: "438049806599",
+    appId: "1:438049806599:web:220c1b6b558def152a0da2"
 };
 
 // Initialize Firebase
