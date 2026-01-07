@@ -36,6 +36,44 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const provider2 = new GithubAuthProvider();
 
+// Loading overlay helpers (used on signin.js as well)
+const createLoadingElements = () => {
+    if (document.getElementById('loading-overlay')) return;
+    const style = document.createElement('style');
+    style.innerHTML = `
+    #loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:9999}
+    #loading-overlay .box{background:#fff;padding:20px 28px;border-radius:8px;display:flex;gap:12px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,0.2)}
+    #loading-overlay .spinner{width:30px;height:30px;border:4px solid #e6e6e6;border-top-color:#1689d3;border-radius:50%;animation:spin 1s linear infinite}
+    #loading-overlay .msg{font-family:inherit;color:#222;font-size:14px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    `;
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.innerHTML = `
+        <div class="box">
+            <div class="spinner" aria-hidden="true"></div>
+            <div class="msg">Loading...</div>
+        </div>
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
+}
+
+const showLoading = (message = 'Loading...') => {
+    createLoadingElements();
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    const msg = overlay.querySelector('.msg');
+    if (msg) msg.textContent = message;
+    overlay.style.display = 'flex';
+}
+
+const hideLoading = () => {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'none';
+}
+
 // SIGN UP
 const signUpUser = () => {
     const userName = document.getElementById('uName').value
@@ -60,6 +98,8 @@ const signUpUser = () => {
             userName, email, password
         }
         console.log(userOBJ);
+        setSignUpButtonLoading(true);
+        showLoading('Creating account...');
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
@@ -69,12 +109,16 @@ const signUpUser = () => {
                     .then(() => {
                         // Email sent!
                         toast("Verification email sent. Please check your inbox.", "#1689d3", "#fff");
+                        hideLoading();
+                        setSignUpButtonLoading(false);
                         setTimeout(() => {
                             window.location.href = 'signin.html'
                         }, 1000)
                     });
             })
             .catch((error) => {
+                hideLoading();
+                setSignUpButtonLoading(false);
                 const errorCode = error.code;
                 console.log(errorCode, error);
                 if (errorCode === 'auth/email-already-in-use') {
@@ -106,17 +150,37 @@ const signUpUser = () => {
     }
 }
 
+// Button loading helper for the sign-up submit button
+const setSignUpButtonLoading = (isLoading, loadingText = 'Loading...') => {
+    const btn = document.querySelector('.login-button[type="submit"]');
+    if (!btn) return;
+    if (isLoading) {
+        if (!btn.dataset.originalValue) btn.dataset.originalValue = btn.value;
+        btn.value = loadingText;
+        btn.disabled = true;
+        btn.classList.add('disabled');
+    } else {
+        btn.value = btn.dataset.originalValue || 'Sign Up';
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+        delete btn.dataset.originalValue;
+    }
+}
+
 // GOOGLE SIGN UP
 const signUpGoogle = () => {
+    showLoading('Signing in with Google...');
     signInWithPopup(auth, provider)
         .then((result) => {
             const user = result.user;
             console.log(user);
+            hideLoading();
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 1000);
         })
         .catch((error) => {
+            hideLoading();
             const errorCode = error.code;
             console.log(errorCode, error);
             if (errorCode === 'auth/account-exists-with-different-credential') {
@@ -151,15 +215,18 @@ const signUpGoogle = () => {
 
 // GITHUB SIGN UP
 const signUpGithub = () => {
+    showLoading('Signing in with GitHub...');
     signInWithPopup(auth, provider2)
         .then((result) => {
             const user = result.user;
             console.log(user);
+            hideLoading();
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 1000);
         })
         .catch((error) => {
+            hideLoading();
             const errorCode = error.code;
             console.log(errorCode, error);
             if (errorCode === 'auth/account-exists-with-different-credential') {

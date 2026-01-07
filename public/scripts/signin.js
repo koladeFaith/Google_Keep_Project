@@ -18,7 +18,7 @@ const toast = (text, background, color) => {
 
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup, signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -35,6 +35,44 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const provider2 = new GithubAuthProvider();
+
+// Loading overlay helpers (same behavior as signup page)
+const createLoadingElements = () => {
+    if (document.getElementById('loading-overlay')) return;
+    const style = document.createElement('style');
+    style.innerHTML = `
+    #loading-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);display:none;align-items:center;justify-content:center;z-index:9999}
+    #loading-overlay .box{background:#fff;padding:20px 28px;border-radius:8px;display:flex;gap:12px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,0.2)}
+    #loading-overlay .spinner{width:30px;height:30px;border:4px solid #e6e6e6;border-top-color:#1689d3;border-radius:50%;animation:spin 1s linear infinite}
+    #loading-overlay .msg{font-family:inherit;color:#222;font-size:14px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    `;
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.innerHTML = `
+        <div class="box">
+            <div class="spinner" aria-hidden="true"></div>
+            <div class="msg">Loading...</div>
+        </div>
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(overlay);
+}
+
+const showLoading = (message = 'Loading...') => {
+    createLoadingElements();
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    const msg = overlay.querySelector('.msg');
+    if (msg) msg.textContent = message;
+    overlay.style.display = 'flex';
+}
+
+const hideLoading = () => {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'none';
+}
 
 // SIGN IN USER
 const signInUser = () => {
@@ -55,6 +93,8 @@ const signInUser = () => {
         return;
     }
     else {
+        setSignInButtonLoading(true);
+        showLoading('Signing in...');
         signInWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 const user = userCredential.user;
@@ -62,6 +102,8 @@ const signInUser = () => {
                 localStorage.setItem('user', JSON.stringify(user));
                 if (user.emailVerified) {
                     toast("Signed in successfully", "#006400", "#fff")
+                    hideLoading();
+                    setSignInButtonLoading(false);
                     user ? setTimeout(() => {
                         window.location.href = 'dashboard.html'
                     }, 1000) : window.location.href = 'index.html'
@@ -69,10 +111,14 @@ const signInUser = () => {
                 } else {
                     toast("Please verify your email before signing in.", "#f00", "#fff");
                     // Optionally, resend verification email
-                    sendEmailVerification(user);
+                    try { sendEmailVerification(user); } catch (e) { /* ignore */ }
+                    hideLoading();
+                    setSignInButtonLoading(false);
                 }
             })
             .catch((error) => {
+                hideLoading();
+                setSignInButtonLoading(false);
                 const errorCode = error.code;
                 console.log(errorCode);
                 if (errorCode === 'auth/wrong-password') {
@@ -106,17 +152,37 @@ const signInUser = () => {
     }
 }
 
+// Button loading helper for the sign-in submit button
+const setSignInButtonLoading = (isLoading, loadingText = 'Loading...') => {
+    const btn = document.querySelector('.login-button[type="submit"]');
+    if (!btn) return;
+    if (isLoading) {
+        if (!btn.dataset.originalValue) btn.dataset.originalValue = btn.value;
+        btn.value = loadingText;
+        btn.disabled = true;
+        btn.classList.add('disabled');
+    } else {
+        btn.value = btn.dataset.originalValue || 'Sign In';
+        btn.disabled = false;
+        btn.classList.remove('disabled');
+        delete btn.dataset.originalValue;
+    }
+}
+
 // GOOGLE SIGN UP
 const signInGoogle = () => {
+    showLoading('Signing in with Google...');
     signInWithPopup(auth, provider)
         .then((result) => {
             const user = result.user;
             console.log(user);
+            hideLoading();
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 1000);
         })
         .catch((error) => {
+            hideLoading();
             const errorCode = error.code;
             console.log(errorCode, error);
             if (errorCode === 'auth/account-exists-with-different-credential') {
@@ -151,15 +217,18 @@ const signInGoogle = () => {
 
 // GITHUB SIGN UP
 const signInGithub = () => {
+    showLoading('Signing in with GitHub...');
     signInWithPopup(auth, provider2)
         .then((result) => {
             const user = result.user;
             console.log(user);
+            hideLoading();
             setTimeout(() => {
                 window.location.href = "dashboard.html";
             }, 1000);
         })
         .catch((error) => {
+            hideLoading();
             const errorCode = error.code;
             console.log(errorCode, error);
             if (errorCode === 'auth/account-exists-with-different-credential') {
