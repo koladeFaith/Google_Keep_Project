@@ -92,7 +92,7 @@ document.addEventListener("click", function (e) {
 });
 // RELOAD ICON
 document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
-    window.location.reload();
+    window.location.reload( );
 });
 // PROFILE MODAL
 const profileIcon = document.querySelector(".profileImg");
@@ -290,7 +290,7 @@ onAuthStateChanged(auth, (user) => {
                 if (profilePicPreview1) profilePicPreview1.src = pic;
             }
         });
-        
+
 
         // --- SHOW ONLY THIS USER'S NOTES ---
         const notesRef = ref(database, "notes/" + user.uid);

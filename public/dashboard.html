@@ -26,8 +26,8 @@
         </div>
         <div class="search-bar">
           <i class="bi bi-search mobile-search"></i>
-          <input type="text" id="noteSearch" placeholder="Search notes...">
-          </div>
+          <input type="text" id="noteSearch" placeholder="Search notes..." />
+        </div>
         <!-- HEADER ICONS -->
         <div class="header-icons">
           <i class="bi bi-search mobile-search" onclick="searchBar()"></i>
@@ -44,7 +44,9 @@
         <!-- SIDE BAR -->
         <aside id="sidebar">
           <nav>
-            <a href="dashboard.html" class="active"><i class="bi bi-journal-text"></i> Notes</a>
+            <a href="dashboard.html" class="active"
+              ><i class="bi bi-journal-text"></i> Notes</a
+            >
             <a href="reminders.html"><i class="bi bi-alarm"></i> Reminders</a>
             <a href="archive.html"><i class="bi bi-archive"></i> Archive</a>
             <a href="trash.html" class=""><i class="bi bi-trash"></i> Trash</a>
@@ -53,18 +55,39 @@
         <!-- MAIN  -->
         <main>
           <div class="search-bar2" id="searchBar2" style="display: none">
-            <input type="text" id="noteSearchMobile" placeholder="Search notes..."/>
+            <input
+              type="text"
+              id="noteSearchMobile"
+              placeholder="Search notes..." />
           </div>
           <!-- INPUT COLLAPSE -->
           <div class="note-input-collapsible" id="noteInputCollapsible">
             <!-- image removal -->
-            <div style="position: relative; display: inline-block;">
-                <img
-                  id="noteImagePreview"
-                  style="display: none; max-width: 100%; margin-bottom: 0px; border-radius: 8px;" />
+            <div style="position: relative; display: inline-block">
+              <img
+                id="noteImagePreview"
+                style="
+                  display: none;
+                  max-width: 100%;
+                  margin-bottom: 0px;
+                  border-radius: 8px;
+                " />
               <span
                 id="removeNoteImageBtn"
-                style="display: none; position: absolute; top: 4px; right: 4px; background: #232323cc; color: #fff; border-radius: 50%; padding: 1px 7px; cursor: pointer; font-size: 1.2em;">&times;</span>
+                style="
+                  display: none;
+                  position: absolute;
+                  top: 4px;
+                  right: 4px;
+                  background: #232323cc;
+                  color: #fff;
+                  border-radius: 50%;
+                  padding: 1px 7px;
+                  cursor: pointer;
+                  font-size: 1.2em;
+                "
+                >&times;</span
+              >
             </div>
             <div class="note-top-row">
               <input
@@ -73,7 +96,11 @@
                 placeholder="Title"
                 class="note-title" />
               <label class="image-upload">
-                <input id="noteImage" type="file" accept="image/*" style="display: none;" />
+                <input
+                  id="noteImage"
+                  type="file"
+                  accept="image/*"
+                  style="display: none" />
                 <span title="Add image"><i class="bi bi-image"></i></span>
               </label>
             </div>
@@ -109,9 +136,17 @@
                       id="profilePicInput"
                       accept="image/*"
                       style="display: none" />
-                    <span class="profile-upload-btn" id="profileUploadBtn">Upload Photo</span>
+                    <span class="profile-upload-btn" id="profileUploadBtn"
+                      >Upload Photo</span
+                    >
                   </label>
-                  <button type="submit" id="profileSubmitBtn" class="profile-upload-btn" style="display:none;">Submit</button>
+                  <button
+                    type="submit"
+                    id="profileSubmitBtn"
+                    class="profile-upload-btn"
+                    style="display: none">
+                    Submit
+                  </button>
                 </form>
               </div>
               <button class="deleteBtn" id="logOut">Log Out</button>
@@ -127,9 +162,26 @@
       <div class="note-edit-content">
         <span class="close-edit-modal" id="closeEditModal">&times;</span>
         <h2>Edit Note</h2>
-        <div style="position: relative; display: inline-block;">
-          <img id="editNoteImagePreview" style="max-width: 100%; margin-bottom: 10px; border-radius: 8px;" />
-          <span id="removeEditImageBtn" style="display: none; position: absolute; top: 4px; right: 4px; background: #232323cc; color: #fff; border-radius: 50%; padding: 2px 7px; cursor: pointer; font-size: 1.2em;">&times;</span>
+        <div style="position: relative; display: inline-block">
+          <img
+            id="editNoteImagePreview"
+            style="max-width: 100%; margin-bottom: 10px; border-radius: 8px" />
+          <span
+            id="removeEditImageBtn"
+            style="
+              display: none;
+              position: absolute;
+              top: 4px;
+              right: 4px;
+              background: #232323cc;
+              color: #fff;
+              border-radius: 50%;
+              padding: 2px 7px;
+              cursor: pointer;
+              font-size: 1.2em;
+            "
+            >&times;</span
+          >
         </div>
         <input id="editNoteTitle" type="text" class="note-title" />
         <input id="editNoteText" type="text" class="note-text" />
