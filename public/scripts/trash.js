@@ -16,7 +16,7 @@ const toast = (text, background, color) => {
     }).showToast();
 }
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
 import {
     getAuth,
     onAuthStateChanged,
@@ -42,11 +42,13 @@ const database = getDatabase(app);
 // === SIDEBAR TOGGLE ===
 const menuToggle = document.getElementById("menu-toggle");
 const sidebar = document.getElementById("sidebar");
-menuToggle.addEventListener("click", () => {
-    sidebar.classList.toggle("active");
-});
+if (menuToggle && sidebar) {
+    menuToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("active");
+    });
+}
 document.addEventListener("click", function (e) {
-    if (window.innerWidth < 768 && sidebar.classList.contains("active")) {
+    if (window.innerWidth < 768 && sidebar && sidebar.classList.contains("active")) {
         if (!sidebar.contains(e.target) && e.target !== menuToggle) {
             sidebar.classList.remove("active");
         }
@@ -80,20 +82,26 @@ window.searchBar = searchBar;
 const profileIcon = document.querySelector(".profileImg");
 const profileModal = document.getElementById("profileModal");
 const closeProfileModal = document.getElementById("closeProfileModal");
-profileIcon.addEventListener("click", () => {
-    profileModal.classList.add("active");
-    document.body.classList.add("profile-modal-active");
-});
-closeProfileModal.addEventListener("click", () => {
-    profileModal.classList.remove("active");
-    document.body.classList.remove("profile-modal-active");
-});
-profileModal.addEventListener("click", (e) => {
-    if (e.target === profileModal) {
+if (profileIcon && profileModal) {
+    profileIcon.addEventListener("click", () => {
+        profileModal.classList.add("active");
+        document.body.classList.add("profile-modal-active");
+    });
+}
+if (closeProfileModal && profileModal) {
+    closeProfileModal.addEventListener("click", () => {
         profileModal.classList.remove("active");
         document.body.classList.remove("profile-modal-active");
-    }
-});
+    });
+}
+if (profileModal) {
+    profileModal.addEventListener("click", (e) => {
+        if (e.target === profileModal) {
+            profileModal.classList.remove("active");
+            document.body.classList.remove("profile-modal-active");
+        }
+    });
+}
 
 // === PROFILE IMAGE UPLOAD ===
 const profilePicInput = document.getElementById('profilePicInput');
@@ -102,39 +110,45 @@ const profileUploadBtn = document.getElementById('profileUploadBtn');
 const profileSubmitBtn = document.getElementById('profileSubmitBtn');
 const profilePicForm = document.getElementById('profilePicForm');
 
-profileUploadBtn.addEventListener('click', function (e) {
-    e.preventDefault();
-    profilePicInput.click();
-});
-profilePicInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            profilePicPreview1.src = event.target.result;
-            profileUploadBtn.style.display = "none";
-            profileSubmitBtn.style.display = "inline-block";
-        };
-        reader.readAsDataURL(file);
-    }
-});
-profilePicForm.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const file = profilePicInput.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            const base64String = event.target.result;
-            set(ref(database, 'users/' + auth.currentUser.uid + '/profilePic'), base64String)
-                .then(() => {
-                    profileUploadBtn.style.display = "inline-block";
-                    profileSubmitBtn.style.display = "none";
-                    toast("Profile picture updated!", '#42A5F5', '#fff');
-                });
-        };
-        reader.readAsDataURL(file);
-    }
-});
+if (profileUploadBtn && profilePicInput) {
+    profileUploadBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        profilePicInput.click();
+    });
+}
+if (profilePicInput) {
+    profilePicInput.addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                profilePicPreview1.src = event.target.result;
+                profileUploadBtn.style.display = "none";
+                profileSubmitBtn.style.display = "inline-block";
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+if (profilePicForm && profilePicInput) {
+    profilePicForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const file = profilePicInput.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                const base64String = event.target.result;
+                set(ref(database, 'users/' + auth.currentUser.uid + '/profilePic'), base64String)
+                    .then(() => {
+                        profileUploadBtn.style.display = "inline-block";
+                        profileSubmitBtn.style.display = "none";
+                        toast("Profile picture updated!", '#42A5F5', '#fff');
+                    });
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
 // // SEARCH BAR
 // function searchBar() {
 //     const searchBar2 = document.getElementById('searchBar2');
@@ -244,12 +258,12 @@ noteEditModal.addEventListener('click', (e) => {
     }
 });
 // === LOGOUT ===
-const logOut = document.getElementById("logOut");
-logOut.addEventListener("click", () => {
-    setTimeout(() => {
-        window.location = "signin.html";
-    }, 1000);
-});
+const _logOut = document.getElementById("logOut");
+if (_logOut) {
+    _logOut.addEventListener("click", () => {
+        setTimeout(() => { window.location = "signin.html"; }, 1000);
+    });
+}
 // RELOAD ICON
 document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
     window.location.reload();

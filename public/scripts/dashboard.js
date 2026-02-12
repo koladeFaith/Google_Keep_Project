@@ -16,7 +16,8 @@ const toast = (text, background, color) => {
     }).showToast();
 }
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
+
 import {
     getAuth,
     onAuthStateChanged,
@@ -92,7 +93,7 @@ document.addEventListener("click", function (e) {
 });
 // RELOAD ICON
 document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
-    window.location.reload( );
+    window.location.reload();
 });
 // PROFILE MODAL
 const profileIcon = document.querySelector(".profileImg");
@@ -193,17 +194,21 @@ profilePicForm.addEventListener('submit', function (e) {
 });
 // NOTE FOCUS
 window.onload = function () {
-    const notesLink = document.querySelector('a[href="#"] i.bi-journal-text').parentElement;
+    const el = document.querySelector('a[href="#"] i.bi-journal-text');
+    const notesLink = el ? el.parentElement : null;
     if (notesLink) {
         notesLink.classList.add('active');
     }
 };
 // LOG OUT
-logOut.addEventListener("click", () => {
-    setTimeout(() => {
-        window.location = "signin.html";
-    }, 1000);
-});
+const _logOut = document.getElementById('logOut');
+if (_logOut) {
+    _logOut.addEventListener("click", () => {
+        setTimeout(() => {
+            window.location = "signin.html";
+        }, 1000);
+    });
+}
 let searchQuery = "";
 
 function highlightMatch(text, query) {
