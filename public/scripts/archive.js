@@ -27,6 +27,7 @@ import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/
 const firebaseConfig = {
     apiKey: "AIzaSyAHuPoJHhLK2ilNWZVL6hWgFpp66-PY8nI",
     authDomain: "keep-5faf9.firebaseapp.com",
+    databaseURL: "https://keep-5faf9-default-rtdb.firebaseio.com",
     projectId: "keep-5faf9",
     storageBucket: "keep-5faf9.firebasestorage.app",
     messagingSenderId: "438049806599",
