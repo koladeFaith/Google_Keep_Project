@@ -382,6 +382,6 @@ onAuthStateChanged(auth, (user) => {
 });
 
 window.editNote = editNote
-window.restoreNote = restoreNote;
-window.deleteNoteForever = deleteNoteForever;
+window.restoreNote = restoreNote
+window.deleteNoteForever = deleteNoteForever
 window.searchBar = searchBar

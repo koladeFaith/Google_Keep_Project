@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -31,8 +31,11 @@
         <!-- HEADER ICONS -->
         <div class="header-icons">
           <i class="bi bi-search mobile-search" onclick="searchBar()"></i>
-          <i class="bi bi-arrow-repeat"></i>
-          <div class="profileImg">
+          <i
+            class="bi bi-arrow-repeat"
+            onclick="reloadPage()"
+            style="cursor: pointer"></i>
+          <div class="profileImg" id="profileImg">
             <img
               id="profilePicPreview"
               src="https://ui-avatars.com/api/?name=User"
@@ -118,9 +121,11 @@
           <!-- PROFILE MODAL -->
           <div id="profileModal" class="profile-modal">
             <div class="profile-modal-content">
-              <span class="close-profile-modal" id="closeProfileModal"
-                >&times;</span
-              >
+              <div>
+                <span class="close-profile-modal" id="closeProfileModal"
+                  >&times;</span
+                >
+              </div>
               <h2>Profile</h2>
               <p id="userEmail"></p>
               <p id="userUname"></p>

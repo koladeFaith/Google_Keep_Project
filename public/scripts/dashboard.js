@@ -88,8 +88,22 @@ if (_noteTitleElem) {
     _noteTitleElem.addEventListener("focus", function () {
         const nd = document.getElementById("noteDetails");
         if (nd) nd.style.display = "flex";
+        console.log(nd);
+
     });
 }
+const profile = document.getElementById("profileImg");
+const profileModal = document.getElementById("profileModal");
+const closeProfileModal = document.getElementById('closeProfileModal')
+profile.addEventListener("click", () => {
+    profileModal.style.display = "block";
+});
+
+// Close modal
+closeProfileModal.addEventListener("click", () => {
+    profileModal.style.display = "none";
+});
+
 
 let editImageRemoved = false;
 
@@ -144,6 +158,9 @@ profilePicForm.addEventListener('submit', function (e) {
         reader.readAsDataURL(file);
     }
 });
+const reloadPage = () => {
+    window.location.reload();
+}
 // NOTE FOCUS
 window.onload = function () {
     const el = document.querySelector('a[href="#"] i.bi-journal-text');
@@ -308,6 +325,7 @@ const addNote = () => {
     const saveNote = (noteTitle, note, imageBase64 = "") => {
         const notesRef = ref(database, "notes/" + auth.currentUser.uid);
         const newNote = { noteTitle, note, image: imageBase64 };
+
         push(notesRef, newNote).then(() => {
             toast("Note added successfully!", '#42A5F5', '#fff');
             document.getElementById("text").value = "";
@@ -317,6 +335,7 @@ const addNote = () => {
             imageInput.value = "";
             removeNoteImageBtn.style.display = "none";
         });
+
     };
 
     if (imageFile) {
@@ -333,7 +352,7 @@ const addNote = () => {
 
 // DISPLAY NOTE ON UI
 // let newRef = ref(database, "notes");
-const noteList = document.getElementById("note-grid")
+// const noteList = document.getElementById("note-grid")
 // onValue(newRef, (snapshot) => {
 //     const data = snapshot.val();
 //     noteList.innerHTML = "";
@@ -518,5 +537,10 @@ const archiveNote = (key) => {
         }
     }, { onlyOnce: true });
 }
-
+window.addNote = addNote
+window.deleteNote = deleteNote
+window.editNote = editNote
+window.archiveNote = archiveNote
+window.searchBar = searchBar
+window.reloadPage = reloadPage
 
