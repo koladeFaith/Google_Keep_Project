@@ -88,8 +88,6 @@ if (_noteTitleElem) {
     _noteTitleElem.addEventListener("focus", function () {
         const nd = document.getElementById("noteDetails");
         if (nd) nd.style.display = "flex";
-        console.log(nd);
-
     });
 }
 const profile = document.getElementById("profileImg");
@@ -180,15 +178,23 @@ if (_logOut) {
 }
 let searchQuery = "";
 
+// DOM reference for notes container
+const noteList = document.getElementById('note-grid');
+
 function highlightMatch(text, query) {
     if (!query) return text;
     const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
 }
 function renderNotes() {
-    const notesRef = ref(database, "notes/" + auth.currentUser.uid);
+    if (!auth.currentUser) return;
+    const notesRef = ref(database, "notes/" + auth.currentUser.uid)
+
+    // Live listener: updates UI when notes change
     onValue(notesRef, (snapshot) => {
         const data = snapshot.val();
+        console.log(snapshot);
+
         noteList.innerHTML = "";
         let hasNotes = false;
         if (data) {
@@ -226,7 +232,7 @@ function renderNotes() {
         if (!hasNotes) {
             noteList.innerHTML = `<div class="empty-message">No notes found.</div>`;
         }
-    }, { onlyOnce: true });
+    });
 }
 // Attach search event
 const noteSearch = document.getElementById('noteSearch');
@@ -248,6 +254,7 @@ if (noteSearchMobile) {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
+
         renderNotes();
         const profilePicPreview = document.getElementById("profilePicPreview");
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
@@ -267,40 +274,7 @@ onAuthStateChanged(auth, (user) => {
         });
 
 
-        // --- SHOW ONLY THIS USER'S NOTES ---
-        const notesRef = ref(database, "notes/" + user.uid);
-        onValue(notesRef, (snapshot) => {
-            const data = snapshot.val();
-            noteList.innerHTML = "";
-            let hasNotes = false;
-            if (data) {
-                Object.keys(data).forEach((key) => {
-                    const info = data[key];
-                    if (!info.trashed && !info.archived) {
-                        hasNotes = true;
-                        noteList.innerHTML += `
-                            <div class="note-card" data-key="${key}">
-                              <div id='note-card2'>
-                                <h4>${info.noteTitle}</h4>
-                                <p style='padding-bottom: 30px'>${info.note}</p>
-                                ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-                              </div>
-                              <div id='hoverIcons'>
-                                <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
-                                <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
-                                <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
-                                <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
-                              </div>
-                            </div>
-                        `;
-                    }
-                });
-            }
-            if (!hasNotes) {
-                noteList.innerHTML = `<div class="empty-message">No notes yet. Your notes will appear here.</div>`;
-            }
-        });
-        // --- END USER NOTES ---
+                // Notes rendering is handled by `renderNotes()` which sets up the live listener.
     } else {
         currentUser = null;
         setTimeout(() => {
@@ -315,6 +289,7 @@ const addNote = () => {
     const imageInput = document.getElementById('noteImage');
     const imageFile = imageInput.files[0];
     const user = auth.currentUser;
+
     if (!user) return;
 
     if (noteTitle === "" || note === "") {
@@ -348,42 +323,6 @@ const addNote = () => {
         saveNote(noteTitle, note);
     }
 };
-
-
-// DISPLAY NOTE ON UI
-// let newRef = ref(database, "notes");
-// const noteList = document.getElementById("note-grid")
-// onValue(newRef, (snapshot) => {
-//     const data = snapshot.val();
-//     noteList.innerHTML = "";
-//     let hasNotes = false;
-//     if (data) {
-//         Object.keys(data).forEach((key) => {
-//             const info = data[key];
-//             if (!info.trashed && !info.archived) {
-//                 hasNotes = true;
-//                 noteList.innerHTML += `
-//                     <div class="note-card">
-//                       <div id='note-card2'>
-//                         <h4>${info.noteTitle}</h4>
-//                         <p style='padding-bottom: 30px'>${info.note}</p>
-//                         ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
-//                       </div>
-//                       <div id='hoverIcons'>
-//                         <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
-//                         <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
-//                         <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
-//                         <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
-//                       </div>
-//                     </div>
-//                 `;
-//             }
-//         });
-//     }
-//     if (!hasNotes) {
-//         noteList.innerHTML = `<div class="empty-message">No notes yet. Your notes will appear here.</div>`;
-//     }
-// });
 
 // DELETE NOTE FUNCTION
 const deleteNote = (key) => {
