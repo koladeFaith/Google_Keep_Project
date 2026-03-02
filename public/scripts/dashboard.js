@@ -45,6 +45,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
+let currentUser = null;
 
 // SIDE BAR
 const menuToggle = document.getElementById("menu-toggle");
@@ -82,63 +83,13 @@ document.querySelectorAll('.sidebar-link').forEach(link => {
     }
 });
 // NOTE FOCUS
-document.getElementById("noteTitle").addEventListener("focus", function () {
-    document.getElementById("noteDetails").style.display = "flex";
-});
-// INPUT COLLAPSE
-document.addEventListener("click", function (e) {
-    const container = document.getElementById("noteInputCollapsible");
-    if (!container.contains(e.target)) {
-        document.getElementById("noteDetails").style.display = "none";
-    }
-});
-// RELOAD ICON
-document.querySelector(".bi-arrow-repeat").addEventListener("click", () => {
-    window.location.reload();
-});
-// PROFILE MODAL
-const profileIcon = document.querySelector(".profileImg");
-const profileModal = document.getElementById("profileModal");
-const closeProfileModal = document.getElementById("closeProfileModal");
-profileIcon.addEventListener("click", () => {
-    profileModal.classList.add("active");
-    document.body.classList.add("profile-modal-active");
-});
-
-closeProfileModal.addEventListener("click", () => {
-    profileModal.classList.remove("active");
-    document.body.classList.remove("profile-modal-active");
-});
-
-profileModal.addEventListener("click", (e) => {
-    if (e.target === profileModal) {
-        profileModal.classList.remove("active");
-        document.body.classList.remove("profile-modal-active");
-    }
-});
-
-// DOM elements for image preview
-const imageInput = document.getElementById('noteImage');
-const imagePreview = document.getElementById('noteImagePreview');
-const imageIcon = document.querySelector('.image-upload span');
-
-imageIcon.addEventListener('click', function () {
-    imageInput.click(); // Open file dialog when icon is clicked
-});
-imageInput.addEventListener('change', function () {
-    const file = this.files[0];
-    if (file) {
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            imagePreview.src = event.target.result;
-            imagePreview.style.display = "block";
-        };
-        reader.readAsDataURL(file);
-    } else {
-        imagePreview.src = "";
-        imagePreview.style.display = "none";
-    }
-});
+const _noteTitleElem = document.getElementById("noteTitle");
+if (_noteTitleElem) {
+    _noteTitleElem.addEventListener("focus", function () {
+        const nd = document.getElementById("noteDetails");
+        if (nd) nd.style.display = "flex";
+    });
+}
 
 let editImageRemoved = false;
 
@@ -279,6 +230,7 @@ if (noteSearchMobile) {
 // ONAUTHSTATECHANGED I.E USER INFO
 onAuthStateChanged(auth, (user) => {
     if (user) {
+        currentUser = user;
         renderNotes();
         const profilePicPreview = document.getElementById("profilePicPreview");
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
@@ -333,6 +285,7 @@ onAuthStateChanged(auth, (user) => {
         });
         // --- END USER NOTES ---
     } else {
+        currentUser = null;
         setTimeout(() => {
             window.location.href = "signin.html";
         }, 1000);
@@ -565,23 +518,5 @@ const archiveNote = (key) => {
         }
     }, { onlyOnce: true });
 }
-// REMINDER NOTE
-const setReminder = (key) => {
-    const noteRef = ref(database, "notes/" + auth.currentUser.uid + "/" + key);
-    onValue(noteRef, (snapshot) => {
-        const note = snapshot.val();
-        if (note) {
-            set(noteRef, { ...note, reminder: true }).then(() => {
-                toast("Reminder set!", '#42A5F5', '#fff');
-            });
-        }
-    }, { onlyOnce: true });
-}
 
-window.addNote = addNote;
-window.searchBar = searchBar;
-window.deleteNote = deleteNote;
-window.editNote = editNote
-window.archiveNote = archiveNote;
-window.setReminder = setReminder;
 
