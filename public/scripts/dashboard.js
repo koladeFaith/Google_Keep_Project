@@ -322,7 +322,6 @@ const addNote = () => {
         }
 
         push(notesRef, newNote).then(() => {
-            console.log('✓ Note pushed to Firebase');
             toast("Note added successfully!", '#42A5F5', '#fff');
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
