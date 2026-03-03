@@ -186,6 +186,7 @@ function highlightMatch(text, query) {
     const safeQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return text.replace(new RegExp(safeQuery, "gi"), (match) => `<span class="search-highlight">${match}</span>`);
 }
+
 function renderNotes() {
     if (!auth.currentUser) return;
     const notesRef = ref(database, "notes/" + auth.currentUser.uid)
@@ -218,7 +219,7 @@ function renderNotes() {
                                 ${info.image ? `<img src="${info.image}" alt="Note Image" style="max-width:100%;margin-top:10px;border-radius:8px;">` : ""}
                               </div>
                               <div id='hoverIcons'>
-                                                              <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
+                                <i onclick='deleteNote("${key}")' class="bi bi-trash3 icons" title="Delete"></i>
                                 <i onclick='editNote("${key}")' class="bi bi-pencil icons" title="Edit"></i>
                                 <i onclick='archiveNote("${key}")' class="bi bi-archive icons" title="Archive"></i>
                                 <i onclick='setReminder("${key}")' class="bi bi-alarm icons" title="Reminder"></i> 
@@ -234,6 +235,7 @@ function renderNotes() {
         }
     });
 }
+
 // Attach search event
 const noteSearch = document.getElementById('noteSearch');
 const noteSearchMobile = document.getElementById('noteSearchMobile');
@@ -274,7 +276,7 @@ onAuthStateChanged(auth, (user) => {
         });
 
 
-                // Notes rendering is handled by `renderNotes()` which sets up the live listener.
+        // Notes rendering is handled by `renderNotes()` which sets up the live listener.
     } else {
         currentUser = null;
         setTimeout(() => {
@@ -297,9 +299,19 @@ const addNote = () => {
         return;
     }
 
-    const saveNote = (noteTitle, note, imageBase64 = "") => {
+    // helper to push a note to the database and refresh UI
+    const saveNote = (noteTitle, note, imageBase64 = null) => {
         const notesRef = ref(database, "notes/" + auth.currentUser.uid);
-        const newNote = { noteTitle, note, image: imageBase64 };
+        const newNote = {
+            noteTitle,
+            note,
+            trashed: false,
+            archived: false
+        };
+
+        if (imageBase64) {
+            newNote.image = imageBase64;
+        }
 
         push(notesRef, newNote).then(() => {
             toast("Note added successfully!", '#42A5F5', '#fff');
@@ -309,8 +321,9 @@ const addNote = () => {
             imagePreview.style.display = "none";
             imageInput.value = "";
             removeNoteImageBtn.style.display = "none";
+            // refresh notes immediately
+            renderNotes();
         });
-
     };
 
     if (imageFile) {
