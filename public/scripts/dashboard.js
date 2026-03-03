@@ -105,12 +105,18 @@ closeProfileModal.addEventListener("click", () => {
 
 let editImageRemoved = false;
 
-removeEditImageBtn.addEventListener('click', function () {
-    editNoteImagePreview.src = "";
-    editNoteImagePreview.style.display = "none";
-    removeEditImageBtn.style.display = "none";
-    editImageRemoved = true;
-});
+// elements related to editing note images; define before attaching listener
+const editNoteImagePreview = document.getElementById('editNoteImagePreview');
+const removeEditImageBtn = document.getElementById('removeEditImageBtn');
+
+if (removeEditImageBtn && editNoteImagePreview) {
+    removeEditImageBtn.addEventListener('click', function () {
+        editNoteImagePreview.src = "";
+        editNoteImagePreview.style.display = "none";
+        removeEditImageBtn.style.display = "none";
+        editImageRemoved = true;
+    });
+}
 // UPLOAD IMAGE PROFILE OR CHANGE THE PROFILE IMAGE 
 const profilePicInput = document.getElementById('profilePicInput');
 const profilePicPreview1 = document.getElementById('profilePicPreview1');
@@ -188,13 +194,18 @@ function highlightMatch(text, query) {
 }
 
 function renderNotes() {
-    if (!auth.currentUser) return;
-    const notesRef = ref(database, "notes/" + auth.currentUser.uid)
+    if (!auth.currentUser) {
+        console.log('renderNotes: no user authenticated');
+        return;
+    }
+    const uid = auth.currentUser.uid;
+    const notesRef = ref(database, "notes/" + uid);
+    console.log('renderNotes: reading from path "notes/' + uid + '"');
 
     // Live listener: updates UI when notes change
     onValue(notesRef, (snapshot) => {
         const data = snapshot.val();
-        console.log(snapshot);
+        console.log('renderNotes snapshot:', data);
 
         noteList.innerHTML = "";
         let hasNotes = false;
@@ -256,7 +267,7 @@ if (noteSearchMobile) {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-
+        console.log('✓ User authenticated:', user.uid);
         renderNotes();
         const profilePicPreview = document.getElementById("profilePicPreview");
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
@@ -301,7 +312,9 @@ const addNote = () => {
 
     // helper to push a note to the database and refresh UI
     const saveNote = (noteTitle, note, imageBase64 = null) => {
-        const notesRef = ref(database, "notes/" + auth.currentUser.uid);
+        const uid = auth.currentUser.uid;
+        const notesRef = ref(database, "notes/" + uid);
+        console.log('saveNote called for user:', uid);
         const newNote = {
             noteTitle,
             note,
@@ -314,11 +327,15 @@ const addNote = () => {
         }
 
         push(notesRef, newNote).then(() => {
+            console.log('✓ Note pushed to Firebase');
             toast("Note added successfully!", '#42A5F5', '#fff');
             document.getElementById("text").value = "";
             document.getElementById("noteTitle").value = "";
-            imagePreview.src = "";
-            imagePreview.style.display = "none";
+            // clear any selected image preview
+            if (noteImagePreview) {
+                noteImagePreview.src = "";
+                noteImagePreview.style.display = "none";
+            }
             imageInput.value = "";
             removeNoteImageBtn.style.display = "none";
             // refresh notes immediately
