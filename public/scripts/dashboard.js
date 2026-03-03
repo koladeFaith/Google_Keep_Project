@@ -200,12 +200,9 @@ function renderNotes() {
     }
     const uid = auth.currentUser.uid;
     const notesRef = ref(database, "notes/" + uid);
-    console.log('renderNotes: reading from path "notes/' + uid + '"');
-
     // Live listener: updates UI when notes change
     onValue(notesRef, (snapshot) => {
         const data = snapshot.val();
-        console.log('renderNotes snapshot:', data);
 
         noteList.innerHTML = "";
         let hasNotes = false;
@@ -267,7 +264,6 @@ if (noteSearchMobile) {
 onAuthStateChanged(auth, (user) => {
     if (user) {
         currentUser = user;
-        console.log('✓ User authenticated:', user.uid);
         renderNotes();
         const profilePicPreview = document.getElementById("profilePicPreview");
         const profilePicPreview1 = document.getElementById("profilePicPreview1");
@@ -314,7 +310,6 @@ const addNote = () => {
     const saveNote = (noteTitle, note, imageBase64 = null) => {
         const uid = auth.currentUser.uid;
         const notesRef = ref(database, "notes/" + uid);
-        console.log('saveNote called for user:', uid);
         const newNote = {
             noteTitle,
             note,
